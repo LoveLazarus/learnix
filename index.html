@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ОрфоЛаб — Интерактивный тренажер ЕГЭ по русскому языку</title>
+  <title>Learnix — Интерактивный практикум ЕГЭ по русскому языку</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Vue 3 -->
@@ -38,21 +38,21 @@
   <header class="flex items-center justify-between border-b border-slate-800/80 pb-5 mb-8">
     <div class="flex items-center gap-3.5 cursor-pointer" @click="goHome">
       <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 flex items-center justify-center font-black text-xl text-slate-950 shadow-lg shadow-sky-500/20">
-        ОЛ
+        LX
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="font-extrabold text-xl tracking-tight">ОрфоЛаб</h1>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 font-bold uppercase tracking-wider">ЕГЭ-2027</span>
+          <h1 class="font-extrabold text-xl tracking-tight">Learnix</h1>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 font-bold uppercase tracking-wider">ФИПИ 2026/2027</span>
         </div>
-        <p class="text-xs text-slate-400">Школьная интерактивная лаборатория русского языка</p>
+        <p class="text-xs text-slate-400">Практикум на базе официальных словарей ФИПИ</p>
       </div>
     </div>
 
-    <!-- Показатели и статистика -->
+    <!-- Показатели -->
     <div class="flex items-center gap-3">
       <div class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300">
-        <span>Решено:</span>
+        <span>Решено заданий:</span>
         <span class="text-sky-400 font-mono">{{ totalSolved }}</span>
       </div>
       <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl text-sm font-semibold text-amber-400">
@@ -67,14 +67,13 @@
     </div>
   </header>
 
-  <!-- 1. ГЛАВНОЕ МЕНЮ / КАТАЛОГ -->
+  <!-- 1. КАТАЛОГ ТРЕНАЖЕРОВ -->
   <main v-if="currentView === 'catalog'" class="flex-1 flex flex-col justify-center">
     
-    <!-- Фильтры по категориям -->
     <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
       <div>
-        <h2 class="text-2xl font-extrabold text-white">Банк интерактивных тренажеров</h2>
-        <p class="text-slate-400 text-xs mt-1">Отработка орфографических и грамматических правил с мгновенной проверкой</p>
+        <h2 class="text-2xl font-extrabold text-white">Тематические разделы ЕГЭ</h2>
+        <p class="text-slate-400 text-xs mt-1">Нормативные задания по кодификатору ФИПИ с академическим комментарием</p>
       </div>
       <div class="flex gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 text-xs">
         <button 
@@ -91,7 +90,7 @@
       </div>
     </div>
 
-    <!-- Сетка карточек -->
+    <!-- Сетка тренажеров -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div 
         v-for="trainer in filteredTrainers" 
@@ -107,7 +106,6 @@
             <span class="text-xs text-slate-500 font-mono">{{ trainer.questions.length }} заданий</span>
           </div>
 
-          <!-- Превью слова/вопроса -->
           <div class="h-16 flex items-center justify-center my-3 bg-slate-950/40 rounded-xl border border-slate-800/50">
             <span class="font-mono text-xl font-bold tracking-wider text-slate-300 group-hover:text-white transition" v-html="trainer.previewHtml"></span>
           </div>
@@ -117,7 +115,7 @@
         </div>
 
         <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs font-semibold text-sky-400">
-          <span>Начать тренировку</span>
+          <span>Начать отработку</span>
           <span class="text-base group-hover:translate-x-1 transition-transform">→</span>
         </div>
       </div>
@@ -128,7 +126,6 @@
   <main v-else-if="currentView === 'trainer'" class="flex-1 flex flex-col justify-center items-center">
     <div class="w-full max-w-xl">
       
-      <!-- Верхний статус-бар -->
       <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
         <button @click="goHome" class="flex items-center gap-1.5 hover:text-white transition font-medium">
           ← Выйти в меню
@@ -139,17 +136,16 @@
         </div>
       </div>
 
-      <!-- Полоса прогресса -->
       <div class="w-full h-1.5 bg-slate-900 rounded-full mb-6 overflow-hidden border border-slate-800/60">
         <div class="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-300" :style="{ width: ((currentIndex + 1) / activeList.length) * 100 + '%' }"></div>
       </div>
 
-      <!-- Центральная карточка -->
+      <!-- Карточка -->
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative">
         
-        <!-- Тип 1: Ударения (Орфоэпия) -->
+        <!-- Тип 1: Орфоэпия -->
         <div v-if="currentTrainer.type === 'accents'" class="text-center py-4">
-          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">Нажмите на букву, на которую падает ударение</p>
+          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">Укажите гласную букву, на которую падает нормативное ударение</p>
           <div class="flex justify-center items-center gap-2 mb-8 flex-wrap">
             <button 
               v-for="(letterObj, idx) in currentQuestion.letters" 
@@ -167,9 +163,9 @@
           </div>
         </div>
 
-        <!-- Тип 2: Пропуск буквы (Корни, Приставки, Суффиксы, Н/НН) -->
+        <!-- Тип 2: Пропуск буквы -->
         <div v-else-if="currentTrainer.type === 'letter_gap'" class="text-center py-4">
-          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">{{ currentQuestion.instruction || 'Вставьте верную букву' }}</p>
+          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">{{ currentQuestion.instruction || 'Выберите правильный вариант' }}</p>
           
           <div class="font-mono text-3xl md:text-4xl font-bold tracking-wider mb-8">
             <span>{{ currentQuestion.prefix }}</span>
@@ -195,9 +191,9 @@
           </div>
         </div>
 
-        <!-- Тип 3: Паронимы / Контекст -->
+        <!-- Тип 3: Паронимы -->
         <div v-else-if="currentTrainer.type === 'paronyms'" class="py-2">
-          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-4 text-center">Выберите верный пароним в контексте предложения</p>
+          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-4 text-center">Выберите верный пароним в соответствии со словарной нормой</p>
           
           <div class="text-base md:text-lg font-medium leading-relaxed mb-6 text-center text-slate-200 bg-slate-950/40 p-4 rounded-xl border border-slate-800">
             {{ currentQuestion.sentenceBefore }}
@@ -221,19 +217,15 @@
           </div>
         </div>
 
-        <!-- Панель пояснений и разбора правила -->
+        <!-- Академическое пояснение -->
         <div v-if="answered" class="mt-6 pt-5 border-t border-slate-800/80 text-left">
           <div class="flex items-start gap-3 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
             <span class="text-2xl">{{ answerStatus === 'correct' ? '✅' : '❌' }}</span>
             <div class="text-xs space-y-1.5 flex-1">
               <p class="font-bold text-slate-200 text-sm">
-                {{ answerStatus === 'correct' ? 'Правильно!' : 'Ошибка! Правильный ответ выделен зеленым.' }}
+                {{ answerStatus === 'correct' ? 'Верно' : 'Неверно. Правильный вариант выделен зеленым цветом.' }}
               </p>
-              <p class="text-slate-300 leading-relaxed">{{ currentQuestion.rule }}</p>
-              
-              <div v-if="currentQuestion.mnemonic" class="mt-2 text-sky-300 bg-sky-950/50 p-2.5 rounded-xl border border-sky-900/40 font-mono">
-                💡 <b>Запоминалка:</b> {{ currentQuestion.mnemonic }}
-              </div>
+              <p class="text-slate-300 leading-relaxed font-normal">{{ currentQuestion.rule }}</p>
             </div>
           </div>
 
@@ -249,19 +241,19 @@
     </div>
   </main>
 
-  <!-- 3. ЭКРАН РЕЗУЛЬТАТОВ РАУНДА -->
+  <!-- 3. РЕЗУЛЬТАТЫ РАУНДА -->
   <main v-else-if="currentView === 'summary'" class="flex-1 flex flex-col justify-center items-center">
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl">
       <div class="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-3xl mx-auto mb-4">
-        {{ roundAccuracy >= 80 ? '🏆' : '📚' }}
+        {{ roundAccuracy >= 80 ? '🏆' : '📖' }}
       </div>
       
-      <h2 class="text-2xl font-bold mb-1">Раунд завершен!</h2>
+      <h2 class="text-2xl font-bold mb-1">Раунд завершен</h2>
       <p class="text-xs text-slate-400 mb-6">{{ currentTrainer.title }}</p>
 
       <div class="grid grid-cols-2 gap-3 mb-6">
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-          <p class="text-[11px] text-slate-500 uppercase font-bold">Точность</p>
+          <p class="text-[11px] text-slate-500 uppercase font-bold">Успешность</p>
           <p class="text-2xl font-black text-sky-400 font-mono mt-0.5">{{ roundAccuracy }}%</p>
         </div>
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
@@ -276,28 +268,28 @@
           @click="startMistakesReview"
           class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition flex items-center justify-center gap-2"
         >
-          <span>🔄</span> Работа над ошибками ({{ mistakesList.length }})
+          <span>🔄</span> Отработать ошибки ({{ mistakesList.length }})
         </button>
 
         <button 
           @click="startTrainer(currentTrainer.id)"
           class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition"
         >
-          Пройти этот тренажер заново
+          Пройти блок повторно
         </button>
 
         <button 
           @click="goHome"
           class="w-full py-3 rounded-xl border border-slate-800 hover:bg-slate-800/40 text-slate-400 hover:text-white font-medium text-xs transition"
         >
-          Вернуться в меню выбора
+          Вернуться к каталогу тем
         </button>
       </div>
     </div>
   </main>
 
   <footer class="mt-8 text-center text-xs text-slate-600 border-t border-slate-900 pt-4">
-    Программный комплекс «ОрфоЛаб» • Индивидуальный проект по русскому языку и информатике
+    Learnix • Индивидуальный проект • Материалы соответствуют нормативным словарям и кодификатору ФИПИ
   </footer>
 
 </div>
@@ -315,74 +307,79 @@
         answered: false,
         answerStatus: null,
         selectedOption: null,
-        streak: parseInt(localStorage.getItem('orpho_streak') || '0'),
-        totalSolved: parseInt(localStorage.getItem('orpho_solved') || '0'),
+        streak: parseInt(localStorage.getItem('learnix_streak') || '0'),
+        totalSolved: parseInt(localStorage.getItem('learnix_solved') || '0'),
         soundEnabled: true,
 
-        // Ошибки за текущий раунд
         mistakesList: [],
         correctAnswersCount: 0,
         activeList: [],
 
         categories: [
-          { id: 'all', title: 'Все задания' },
+          { id: 'all', title: 'Все темы' },
           { id: 'ortho', title: 'Орфография' },
-          { id: 'norms', title: 'Нормы речи' },
+          { id: 'norms', title: 'Орфоэпия' },
           { id: 'lexis', title: 'Лексика' }
         ],
 
-        // БАНК ЗАДАНИЙ (6 ТРЕНАЖЕРОВ)
+        // БАНК ЗАДАНИЙ (СТРОГО ФИПИ)
         trainers: [
           {
             id: 'accents',
             category: 'norms',
-            examTag: 'Задание 4',
-            title: 'Орфоэпический минимум',
-            description: 'Постановка правильного ударения в существительных, глаголах и наречиях из банка ФИПИ.',
-            previewHtml: 'добрал<span class="text-sky-400 underline">А</span>',
+            examTag: 'Задание 4 ФИПИ',
+            title: 'Орфоэпический словник',
+            description: 'Постановка нормативного ударения в словах из официального ежегодного словника ФИПИ.',
+            previewHtml: 'катал<span class="text-sky-400 underline">О</span>г',
             type: 'accents',
             questions: [
               {
                 rawWord: "добрала",
                 vowelsIndex: [1, 4, 6],
                 correctIndex: 6,
-                rule: "В глаголах прошедшего времени женского рода ударение обычно падает на окончание -А.",
-                mnemonic: "Она яблоки срывала и в корзину добралА."
+                rule: "Норма ФИПИ: в подавляющем большинстве глаголов прошедшего времени женского рода ударение падает на окончание -А (добралА, бралА, взялА, жилА)."
               },
               {
                 rawWord: "торты",
                 vowelsIndex: [1, 4],
                 correctIndex: 1,
-                rule: "Неподвижное ударение на корне: тОрты, тОртами, в тОртах.",
-                mnemonic: "Долго ели тОрты — не налезли шорты!"
+                rule: "Норма ФИПИ: существительное с неподвижным ударением на основе во всех формах падежа и числа (тОрты, тОрта, тОртами, о тОртах)."
               },
               {
                 rawWord: "звонит",
                 vowelsIndex: [2, 5],
                 correctIndex: 5,
-                rule: "В личных формах глагола 'звонить' ударение всегда падает на окончание: звонИшь, звонИт, звонЯт.",
-                mnemonic: "Телефон опять звонИт, сделать тест нам всем велит."
+                rule: "Норма ФИПИ: глагол II спряжения на -ИТЬ сохраняет неподвижное ударение на личном окончании (звонИшь, звонИт, звонИм, звонЯт)."
               },
               {
                 rawWord: "жалюзи",
                 vowelsIndex: [1, 4, 6],
                 correctIndex: 6,
-                rule: "Слово французского происхождения. Во французском ударение всегда фиксировано на последнем слоге.",
-                mnemonic: "Шторы в стиле ар-деко, жалюзИ из Монако."
+                rule: "Норма ФИПИ: заимствованное несклоняемое существительное французского происхождения, ударение строго на последний слог (жалюзИ)."
+              },
+              {
+                rawWord: "каталог",
+                vowelsIndex: [1, 3, 6],
+                correctIndex: 6,
+                rule: "Норма ФИПИ: слова греческого происхождения на -ЛОГ, обозначающие списки и документы, имеют ударение на последний слог (каталОг, диалОг, монолОг; исключение: анАлог)."
+              },
+              {
+                rawWord: "кралась",
+                vowelsIndex: [2, 4],
+                correctIndex: 2,
+                rule: "Норма ФИПИ: входит в группу глаголов-исключений женского рода прош. времени, где ударение остается на основе (крАлась, клАла, слАла, послАла)."
               },
               {
                 rawWord: "банты",
                 vowelsIndex: [1, 4],
                 correctIndex: 1,
-                rule: "Ударение на корне сохраняется во всех формах: бАнты, бАнтами, о бАнтах.",
-                mnemonic: "Девочки надели бАнты и пошли играть в куранты."
+                rule: "Норма ФИПИ: существительное с неподвижным ударением на основе (бАнты, бАнтов, бАнтам)."
               },
               {
                 rawWord: "донизу",
                 vowelsIndex: [1, 3, 5],
                 correctIndex: 1,
-                rule: "В наречиях с приставкой ДО- ударение падает на приставку: дОнизу, дОверху, дОсуха (но: добелА, докраснА).",
-                mnemonic: "Опустили флаг дОнизу."
+                rule: "Норма ФИПИ: наречие с приставкой ДО-. В наречиях с приставками ДО-, ЗА-, С- ударение падает на приставку (дОнизу, дОверху, дОсуха; но: добелА, докраснА)."
               }
             ]
           },
@@ -390,56 +387,59 @@
           {
             id: 'roots',
             category: 'ortho',
-            examTag: 'Задание 9',
-            title: 'Гласные в корне',
-            description: 'Отработка чередующихся, проверяемых и словарных корней слов.',
-            previewHtml: 'в<span class="text-emerald-400 border-b-2 border-emerald-400 mx-0.5">и</span>негрет',
+            examTag: 'Задание 9 ФИПИ',
+            title: 'Правописание корней',
+            description: 'Чередующиеся гласные корня, проверяемые и непроверяемые безударные позиции.',
+            previewHtml: 'прик<span class="text-emerald-400 border-b-2 border-emerald-400 mx-0.5">о</span>сновение',
             type: 'letter_gap',
             questions: [
               {
-                instruction: "Вставьте гласную в словарное слово",
-                prefix: "в",
-                suffix: "негрет",
-                correctLetter: "и",
-                options: ["и", "е"],
-                rule: "Непроверяемая безударная гласная корня. Заимствовано от французского vinaigre (уксус).",
-                mnemonic: "Винни-Пух варил винегрет."
-              },
-              {
-                instruction: "Чередующаяся гласная в корне КОС / КАС",
+                instruction: "Чередование в корне КОС / КАС",
                 prefix: "прик",
                 suffix: "сновение",
                 correctLetter: "о",
                 options: ["о", "а"],
-                rule: "В корне кос-/кас- буква А пишется только перед суффиксом -А-. Здесь суффикса нет, пишем О.",
-                mnemonic: "Есть суффикс -А-? Пиши КАС! Нет суффикса — пиши КОС."
+                rule: "Правило кодификатора: выбор О/А в корне зависит от суффикса -А-. Перед суффиксом -А- пишется корень КАС- (касаться), при отсутствии суффикса — КОС- (прикосновение)."
               },
               {
-                instruction: "Чередующаяся гласная в корне ГОР / ГАР",
+                instruction: "Непроверяемая безударная гласная (словарное слово)",
+                prefix: "в",
+                suffix: "негрет",
+                correctLetter: "и",
+                options: ["и", "е"],
+                rule: "Норма орфографического словаря РАН: словарное слово французского происхождения (от vinaigre — уксус). Написание корня винегрет- является нормативно фиксированным."
+              },
+              {
+                instruction: "Чередование в корне ГОР / ГАР",
                 prefix: "заг",
                 suffix: "релый",
                 correctLetter: "о",
                 options: ["о", "а"],
-                rule: "В корне гар-/гор- без ударения пишется буква О (под ударением — А: загАр, угАр).",
-                mnemonic: "Без ударения солнце гОрит — пиши О."
+                rule: "Правило кодификатора: в корне гар-/гор- без ударения пишется буква О (загоре́лый, подгоре́ть). Под ударением пишется А (зага́р, уга́р)."
               },
               {
-                instruction: "Чередующаяся гласная в корне СКОЧ / СКАК",
+                instruction: "Чередование в корне СКАК / СКОЧ",
                 prefix: "выск",
                 suffix: "чить",
                 correctLetter: "о",
                 options: ["о", "а"],
-                rule: "Перед буквой Ч пишется О, перед буквой К пишется А (исключения: скачок, скачу).",
-                mnemonic: "Перед Ч пиши О, перед К пиши А."
+                rule: "Правило кодификатора: в безударном корне перед буквой К пишется А (скака́ть), перед буквой Ч пишется О (вы́скочить). Исключения: скачо́к, скачу́."
               },
               {
-                instruction: "Непроверяемая словарная гласная",
+                instruction: "Чередование в корне МАК / МОК",
+                prefix: "пром",
+                suffix: "кашка",
+                correctLetter: "о",
+                options: ["о", "а"],
+                rule: "Правило кодификатора: корень МАК- обозначает 'погружать в жидкость' (макать хлеб), МОК- — 'пропускать жидкость, становиться влажным' (промокательная бумага, непромокаемый)."
+              },
+              {
+                instruction: "Непроверяемая безударная гласная (словарное слово)",
                 prefix: "пал",
                 suffix: "садник",
                 correctLetter: "и",
                 options: ["и", "е"],
-                rule: "Словарное слово французского происхождения (palissade). Пишется через букву И: палисадник.",
-                mnemonic: "В палисаднике цветет сирень."
+                rule: "Норма орфографического словаря: заимствование (франц. palissade). Пишется исключительно с буквой И в первом слоге: палисадник."
               }
             ]
           },
@@ -447,38 +447,27 @@
           {
             id: 'prefixes',
             category: 'ortho',
-            examTag: 'Задание 10',
+            examTag: 'Задание 10 ФИПИ',
             title: 'Приставки ПРЕ- и ПРИ-',
-            description: 'Различение значений приближения, неполноты действия и высшей степени.',
-            previewHtml: 'пр<span class="text-sky-400 border-b-2 border-sky-400 mx-0.5">е</span>зидент',
+            description: 'Семантическое различение значений приставок пре- и при- по кодификатору ЕГЭ.',
+            previewHtml: 'пр<span class="text-sky-400 border-b-2 border-sky-400 mx-0.5">и</span>морский',
             type: 'letter_gap',
             questions: [
               {
-                instruction: "Выберите правильную букву в приставке",
-                prefix: "пр",
-                suffix: "зидент",
-                correctLetter: "е",
-                options: ["е", "и"],
-                rule: "Словарное заимствованное слово. Исторически приставка пре- восходит к латинскому prae- (впереди сидящий).",
-                mnemonic: "Президент — первый человек государства."
-              },
-              {
-                instruction: "Значение приближения / присоединения",
+                instruction: "Значение пространственной близости",
                 prefix: "пр",
                 suffix: "морский",
                 correctLetter: "и",
                 options: ["и", "е"],
-                rule: "Приставка ПРИ- пишется в значении пространственной близости (находящийся около моря).",
-                mnemonic: "Около чего-то — значит ПРИ-."
+                rule: "Кодификатор ФИПИ: приставка ПРИ- пишется в значении нахождения вблизи объекта (приморский = находящийся около моря, пришкольный, прибрежный)."
               },
               {
-                instruction: "Значение высокой степени качества (= ОЧЕНЬ)",
+                instruction: "Значение высокой степени качества",
                 prefix: "пр",
                 suffix: "милый",
                 correctLetter: "е",
                 options: ["е", "и"],
-                rule: "Приставка ПРЕ- пишется в значении 'очень', 'весьма' (премилый = очень милый).",
-                mnemonic: "Если можно заменить на 'ОЧЕНЬ' — пиши ПРЕ."
+                rule: "Кодификатор ФИПИ: приставка ПРЕ- пишется в значении предельной степени признака, тождественной слову 'очень' (премилый = очень милый, презабавный)."
               },
               {
                 instruction: "Значение неполноты действия",
@@ -486,17 +475,31 @@
                 suffix: "открыть",
                 correctLetter: "и",
                 options: ["и", "е"],
-                rule: "Приставка ПРИ- обозначает неполноту действия (открыть чуть-чуть, не до конца).",
-                mnemonic: "Чуть-чуть приоткрыл дверь."
+                rule: "Кодификатор ФИПИ: приставка ПРИ- обозначает совершение действия в неполном объеме или на ограниченное время (приоткрыть, присесть, привстать)."
               },
               {
-                instruction: "Значение приставки ПЕРЕ-",
+                instruction: "Близость по значению к приставке ПЕРЕ-",
                 prefix: "пр",
                 suffix: "одолеть",
                 correctLetter: "е",
                 options: ["е", "и"],
-                rule: "Приставка ПРЕ- близка по значению к приставке ПЕРЕ- (пересилить, перешагнуть барьер).",
-                mnemonic: "Преодолеть — перешагнуть через преграду."
+                rule: "Кодификатор ФИПИ: приставка ПРЕ- пишется в значениях, близких по смыслу к приставке ПЕРЕ- (преодолеть = пересилить барьер, преградить = перегородить)."
+              },
+              {
+                instruction: "Словарное иноязычное слово",
+                prefix: "пр",
+                suffix: "зидент",
+                correctLetter: "е",
+                options: ["е", "и"],
+                rule: "Норма орфографического словаря: заимствованное существительное латинского корня (praesidens). Написание буквы Е нормативно зафиксировано в словарях."
+              },
+              {
+                instruction: "Значение доведения действия до результата",
+                prefix: "пр",
+                suffix: "думать",
+                correctLetter: "и",
+                options: ["и", "е"],
+                rule: "Кодификатор ФИПИ: приставка ПРИ- используется при обозначении завершения действия, исчерпанности процесса (придумать, приручить)."
               }
             ]
           },
@@ -504,47 +507,51 @@
           {
             id: 'suffixes',
             category: 'ortho',
-            examTag: 'Задание 11',
+            examTag: 'Задание 11 ФИПИ',
             title: 'Правописание суффиксов',
-            description: 'Суффиксы глаголов -ОВА-/-ЕВА- и -ЫВА-/-ИВА-, а также суффиксы прилагательных.',
+            description: 'Суффиксы глаголов -ОВА-/-ЕВА- и -ЫВА-/-ИВА-, прилагательных -ИВ-/-ЕВ- и исключения.',
             previewHtml: 'исследов<span class="text-violet-400 border-b-2 border-violet-400 mx-0.5">а</span>ть',
             type: 'letter_gap',
             questions: [
               {
-                instruction: "Суффикс глагола в неопределенной форме",
+                instruction: "Суффикс глагола в форме инфинитива",
                 prefix: "исследов",
                 suffix: "ть",
                 correctLetter: "а",
                 options: ["а", "ыва"],
-                rule: "Ставим глагол в форму 1-го лица: я исслед-УЮ. Если форма оканчивается на -ую/-юю, пишем суффикс -ОВА-/-ЕВА-.",
-                mnemonic: "Я исследую — значит исследОВАть."
+                rule: "Кодификатор ФИПИ: ставим глагол в 1-е лицо ед. ч. настоящего времени: 'я исслед-УЮ'. Если форма оканчивается на -ую/-юю, в инфинитиве пишется суффикс -ОВА-/-ЕВА-."
               },
               {
-                instruction: "Суффикс глагола: сохранение в 1 лице",
+                instruction: "Суффикс глагола: сохранение основы в 1-м лице",
                 prefix: "застёг",
                 suffix: "вать",
                 correctLetter: "ива",
                 options: ["ива", "ева"],
-                rule: "Ставим в 1-е лицо: я застёг-ИВА-Ю. Суффикс сохраняется, значит пишем -ИВА-.",
-                mnemonic: "Суффикс остался в 'я делаю' — пиши -ИВА-."
+                rule: "Кодификатор ФИПИ: ставим глагол в 1-е лицо ед. ч.: 'я застёг-ИВА-Ю'. Суффикс сохраняется, следовательно, в инфинитиве пишется -ИВА-/-ЫВА-."
               },
               {
-                instruction: "Исключение из правила суффиксов на -ВАТЬ",
+                instruction: "Слово-исключение перед ударным -ВА-",
                 prefix: "затм",
                 suffix: "вать",
                 correctLetter: "е",
                 options: ["е", "и"],
-                rule: "Слово-исключение! Глаголы: затмевать, продлевать, растлевать пишутся с суффиксом -ЕВА-.",
-                mnemonic: "Затмевать, продлевать — всегда пиши с Е!"
+                rule: "Нормативное исключение: перед ударным суффиксом -ВА- пишется та же гласная, что и в инфинитиве без этого суффикса (затмить $\\to$ исключение: затмевать, продлевать, застревать)."
               },
               {
-                instruction: "Суффикс прилагательного без ударения",
+                instruction: "Безударный суффикс прилагательного",
                 prefix: "фасол",
                 suffix: "вый",
                 correctLetter: "е",
                 options: ["е", "и"],
-                rule: "В суффиксах прилагательных -ИВ-/-ЕВ- без ударения пишется буква Е (под ударением — И: краси́вый).",
-                mnemonic: "Без ударения в суффиксе — буква Е."
+                rule: "Кодификатор ФИПИ: в суффиксах прилагательных -ИВ-/-ЕВ- под ударением пишется И (краси́вый, правди́вый), в безударном положении — Е (фасо́левый, сире́невый)."
+              },
+              {
+                instruction: "Суффикс глагола (форма 1-го лица на -ую)",
+                prefix: "ноч",
+                suffix: "вать",
+                correctLetter: "е",
+                options: ["е", "ива"],
+                rule: "Кодификатор ФИПИ: проверяем через 1-е лицо: 'я ноч-УЮ'. Окончание на -ую свидетельствует о наличии суффикса -ЕВА-."
               }
             ]
           },
@@ -552,10 +559,10 @@
           {
             id: 'n_nn',
             category: 'ortho',
-            examTag: 'Задание 15',
-            title: 'Н и НН в суффиксах',
-            description: 'Правописание одной и двух букв Н в прилагательных, причастиях и наречиях.',
-            previewHtml: 'маза<span class="text-pink-400 border-b-2 border-pink-400 mx-0.5">н</span>ыми',
+            examTag: 'Задание 15 ФИПИ',
+            title: 'Правописание Н и НН',
+            description: 'Нормы написания Н и НН в отыменных, отглагольных прилагательных и полных причастиях.',
+            previewHtml: 'масл<span class="text-pink-400 border-b-2 border-pink-400 mx-0.5">ян</span>ый',
             type: 'letter_gap',
             questions: [
               {
@@ -564,35 +571,39 @@
                 suffix: "ый крем",
                 correctLetter: "ян",
                 options: ["ян", "янн"],
-                rule: "В отыменных прилагательных с суффиксами -АН-, -ЯН-, -ИН- пишется одна буква Н (исключения: стеклянный, оловянный, деревянный).",
-                mnemonic: "АН, ЯН, ИН — с одной буквой Н дружИн."
+                rule: "Кодификатор ФИПИ: в отыменных прилагательных с суффиксами -АН-, -ЯН-, -ИН- пишется одна буква Н (масляный, кожаный, соколиный). Исключения: стеклянный, оловянный, деревянный."
               },
               {
-                instruction: "Полное причастие с зависимым словом",
+                instruction: "Полное причастие при наличии зависимого слова",
                 prefix: "тушё",
-                suffix: "ое в соусе мясо",
+                suffix: "ое в печи мясо",
                 correctLetter: "нн",
                 options: ["нн", "н"],
-                rule: "В полных причастиях при наличии зависимых слов (тушенное ГДЕ? в соусе) пишется две буквы НН.",
-                mnemonic: "Есть зависимое слово — обязательно НН!"
+                rule: "Кодификатор ФИПИ: в полных причастиях пишется две буквы НН при наличии зависимых слов ('тушенное' ГДЕ? 'в печи')."
               },
               {
-                instruction: "Знаменитое исключение",
+                instruction: "Традиционное исключение отыменных прилагательных",
                 prefix: "дерев",
-                suffix: "ый стол",
+                suffix: "ый дом",
                 correctLetter: "янн",
                 options: ["янн", "ян"],
-                rule: "Исключение из школьного правила: стеклянный, оловянный, деревянный пишется с двумя НН.",
-                mnemonic: "Окно: стеклянное полотно, деревянная рама, оловянный шпингалет."
+                rule: "Нормативное исключение: слова 'стеклянный', 'оловянный', 'деревянный' пишутся с удвоенной буквой НН во всех падежах."
               },
               {
-                instruction: "Отглагольное прилагательное без зависимых слов",
+                instruction: "Одиночное отглагольное прилагательное",
                 prefix: "ране",
-                suffix: "ый солдат",
+                suffix: "ый боец",
                 correctLetter: "н",
                 options: ["н", "нн"],
-                rule: "Одиночное отглагольное прилагательное несовершенного вида пишется с одной Н (но: тяжелораненный — есть зависимое слово).",
-                mnemonic: "Один раненый воин — одна буква Н."
+                rule: "Кодификатор ФИПИ: в отглагольных прилагательных несовершенного вида без приставок и зависимых слов пишется одна Н (раненый солдат; но: израненный боец, раненный в руку боец)."
+              },
+              {
+                instruction: "Прилагательное от глагола совершенного вида",
+                prefix: "купл",
+                suffix: "ый товар",
+                correctLetter: "енн",
+                options: ["енн", "ен"],
+                rule: "Кодификатор ФИПИ: причастия и отглагольные прилагательные, образованные от глаголов совершенного вида (что сделать? — купить), пишутся с двумя буквами НН."
               }
             ]
           },
@@ -600,43 +611,53 @@
           {
             id: 'paronyms',
             category: 'lexis',
-            examTag: 'Задание 5',
-            title: 'Словарь паронимов',
-            description: 'Лексическая сочетаемость и выбор корректного паронима в предложении.',
+            examTag: 'Задание 5 ФИПИ',
+            title: 'Словник паронимов ФИПИ',
+            description: 'Лексическая сочетаемость паронимических пар из официального вопросника ЕГЭ.',
             previewHtml: 'годовалый / годовой',
             type: 'paronyms',
             questions: [
               {
-                sentenceBefore: "В парке гуляла молодая мама с",
-                sentenceAfter: "ребенком на руках.",
+                sentenceBefore: "В парке гуляла женщина с",
+                sentenceAfter: "ребенком.",
                 options: ["годовалым", "годовым"],
                 correctWord: "годовалым",
-                rule: "Годовалый — в возрасте одного года (о живых существах). Годовой — рассчитанный на целый год (годовой план, отчет).",
-                mnemonic: "Годовалый ребенок, но годовой бюджет."
+                rule: "Словник паронимов ФИПИ: ГОДОВАЛЫЙ — в возрасте одного года, относящийся к возрасту в один год (годовалый ребенок). ГОДОВОЙ — рассчитанный на целый год, относящийся к периоду года (годовой отчет, годовая оценка)."
               },
               {
-                sentenceBefore: "Перед выходом на сильный мороз обязательно",
-                sentenceAfter: "теплую шапку и шарф.",
-                options: ["надень", "одень"],
-                correctWord: "надень",
-                rule: "НАДЕТЬ — на себя (или на кого-то надеть предмет). ОДЕТЬ — кого-то в одежду.",
-                mnemonic: "Одевают Надежду, надевают одежду!"
+                sentenceBefore: "Перед выходом на улицу в мороз необходимо",
+                sentenceAfter: "теплое пальто.",
+                options: ["надеть", "одеть"],
+                correctWord: "надеть",
+                rule: "Словник паронимов ФИПИ: НАДЕТЬ — надевать что-либо на себя или на другого человека (надеть пальто, шапку). ОДЕТЬ — облекать кого-либо в одежду (одеть ребенка, больного)."
               },
               {
-                sentenceBefore: "Гончар продемонстрировал",
-                sentenceAfter: "умение обращаться с глиной.",
-                options: ["искусное", "искусственное"],
-                correctWord: "искусное",
-                rule: "Искусный — умелый, мастерский (искусный мастер, искусная работа). Искусственный — ненатуральный, сделанный человеком.",
-                mnemonic: "Искусный мастер создал искусственный камень."
+                sentenceBefore: "Пожилой мастер проявил себя как",
+                sentenceAfter: "реставратор антиквариата.",
+                options: ["искусный", "искусственный"],
+                correctWord: "искусный",
+                rule: "Словник паронимов ФИПИ: ИСКУСНЫЙ — умелый, обладающий высоким мастерством (искусный мастер, оратор). ИСКУССТВЕННЫЙ — ненатуральный, созданный человеком (искусственный шелк, свет)."
               },
               {
-                sentenceBefore: "Этот человек показал себя абсолютным",
-                sentenceAfter: "в вопросах классической живописи.",
+                sentenceBefore: "В вопросах точных наук он показал себя абсолютным",
+                sentenceAfter: ", путающим базовые понятия.",
                 options: ["невеждой", "невежей"],
                 correctWord: "невеждой",
-                rule: "Невежда — малообразованный, несведущий человек. Невежа — грубый, невоспитанный человек.",
-                mnemonic: "Невежда не ведает (не знает), невежа невежлив!"
+                rule: "Словник паронимов ФИПИ: НЕВЕЖДА — малообразованный, несведущий в какой-либо области человек. НЕВЕЖА — грубый, невоспитанный, нарушающий правила этикета человек."
+              },
+              {
+                sentenceBefore: "Разведчики скрытно проникли во",
+                sentenceAfter: "расположение войск.",
+                options: ["вражеское", "враждебное"],
+                correctWord: "вражеское",
+                rule: "Словник паронимов ФИПИ: ВРАЖЕСКИЙ — относящийся к неприятелю, принадлежащий врагу (вражеский лагерь, танк). ВРАЖДЕБНЫЙ — полный неприязни, ненависти (враждебный взгляд, отношение)."
+              },
+              {
+                sentenceBefore: "Кондуктор напомнил, что своевременная",
+                sentenceAfter: "проезда обязательна.",
+                options: ["оплата", "выплата"],
+                correctWord: "оплата",
+                rule: "Словник паронимов ФИПИ: ОПЛАТА — внесение платы за товар или услугу (оплата проезда, труда, счетов). ВЫПЛАТА — выдача причитающихся денежных средств (выплата пенсий, пособий)."
               }
             ]
           }
@@ -702,7 +723,6 @@
         this.currentView = 'trainer';
       },
 
-      // Аудиосинтез эффектов (Web Audio API)
       playSound(type) {
         if (!this.soundEnabled) return;
         try {
@@ -748,7 +768,7 @@
       recordAnswer(isCorrect, originalQuestion) {
         this.answered = true;
         this.totalSolved++;
-        localStorage.setItem('orpho_solved', this.totalSolved);
+        localStorage.setItem('learnix_solved', this.totalSolved);
 
         if (isCorrect) {
           this.answerStatus = 'correct';
@@ -761,10 +781,9 @@
           this.mistakesList.push(originalQuestion);
           this.playSound('error');
         }
-        localStorage.setItem('orpho_streak', this.streak);
+        localStorage.setItem('learnix_streak', this.streak);
       },
 
-      // Обработка ударений
       handleAccentClick(letterObj, idx) {
         if (!letterObj.isVowel || this.answered) return;
         this.selectedOption = idx;
@@ -785,7 +804,6 @@
         return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
       },
 
-      // Обработка пропущенных букв (корни, приставки, суффиксы, н/нн)
       handleOptionClick(opt) {
         if (this.answered) return;
         this.selectedOption = opt;
@@ -804,7 +822,6 @@
         return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
       },
 
-      // Обработка паронимов
       handleParonymClick(word) {
         if (this.answered) return;
         this.selectedOption = word;
