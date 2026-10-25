@@ -3,42 +3,1616 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090d16">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Интерактивные тренажёры русского языка. Практикуйте орфографию, ударения, пунктуацию и лексику.">
   <title>Learnix — тренажёры русского языка</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --bg-soft: #101729;
+      --panel: rgba(18, 27, 47, .82);
+      --panel-strong: #131d32;
+      --line: rgba(148, 163, 184, .13);
+      --text: #eef3ff;
+      --muted: #8793aa;
+      --subtle: #5e6b84;
+      --primary: #75e0c2;
+      --primary-strong: #37cba3;
+      --blue: #87a9ff;
+      --yellow: #ffd27a;
+      --red: #ff8996;
+      --purple: #c4a2ff;
+      --radius-lg: 24px;
+      --radius-md: 17px;
+      --radius-sm: 12px;
+      --shadow: 0 20px 70px rgba(0, 0, 0, .24);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      scroll-behavior: smooth;
+    }
 
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #090d16;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 15% 0%, rgba(47, 108, 114, .18), transparent 35%),
+        radial-gradient(ellipse at 90% 12%, rgba(67, 75, 153, .19), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace;
+    button,
+    input,
+    select {
+      font: inherit;
     }
 
-    .card-glow:hover {
-      box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.2);
+    button {
+      color: inherit;
     }
 
     button:focus-visible,
-    [role="button"]:focus-visible {
-      outline: 3px solid #38bdf8;
+    input:focus-visible,
+    select:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid rgba(117, 224, 194, .85);
       outline-offset: 3px;
     }
 
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
+    button:disabled {
+      cursor: not-allowed;
     }
 
-    .animate-shake {
-      animation: shake 0.3s ease-in-out;
+    ::selection {
+      color: #071311;
+      background: var(--primary);
+    }
+
+    .app-shell {
+      width: min(1420px, 100%);
+      min-height: 100vh;
+      padding: 0 34px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(117, 224, 194, .35);
+      border-radius: 15px;
+      color: #081511;
+      background: linear-gradient(145deg, #9ff2da, #40c7a0);
+      box-shadow: 0 8px 28px rgba(55, 203, 163, .2);
+      font: 800 15px 'Manrope', sans-serif;
+      letter-spacing: -1px;
+    }
+
+    .brand-name {
+      display: block;
+      font: 800 19px 'Manrope', sans-serif;
+      letter-spacing: -.8px;
+    }
+
+    .brand-caption {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .header-actions,
+    .header-stat,
+    .user-chip {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-actions {
+      gap: 10px;
+    }
+
+    .header-stat,
+    .user-chip {
+      min-height: 39px;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(18, 27, 47, .75);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .header-stat strong {
+      color: var(--primary);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .user-chip {
+      color: var(--yellow);
+    }
+
+    .icon-button {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(18, 27, 47, .75);
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+
+    .icon-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(117, 224, 194, .45);
+      background: var(--panel-strong);
+    }
+
+    .page {
+      flex: 1;
+      padding: 38px 0 54px;
+    }
+
+    .page-enter-active,
+    .page-leave-active {
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .page-enter-from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .page-leave-to {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 18px;
+      height: 1px;
+      background: currentColor;
+      content: '';
+    }
+
+    .page-title {
+      margin: 10px 0 8px;
+      font: 800 clamp(29px, 4vw, 45px)/1.1 'Manrope', sans-serif;
+      letter-spacing: -1.8px;
+    }
+
+    .page-subtitle {
+      max-width: 660px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 290px;
+      gap: 22px;
+      margin-bottom: 36px;
+    }
+
+    .hero-card {
+      position: relative;
+      min-height: 235px;
+      overflow: hidden;
+      padding: 31px;
+      border: 1px solid rgba(117, 224, 194, .2);
+      border-radius: var(--radius-lg);
+      background:
+        radial-gradient(circle at 83% 22%, rgba(117, 224, 194, .19), transparent 28%),
+        linear-gradient(125deg, rgba(27, 61, 65, .88), rgba(19, 29, 50, .95) 63%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card::after {
+      position: absolute;
+      right: 7%;
+      bottom: -95px;
+      width: 220px;
+      height: 220px;
+      border: 1px solid rgba(117, 224, 194, .12);
+      border-radius: 50%;
+      box-shadow: 0 0 0 28px rgba(117, 224, 194, .035), 0 0 0 57px rgba(117, 224, 194, .025);
+      content: '';
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 570px;
+    }
+
+    .hero-title {
+      max-width: 470px;
+      margin: 14px 0 9px;
+      font: 800 clamp(27px, 3vw, 38px)/1.12 'Manrope', sans-serif;
+      letter-spacing: -1.2px;
+    }
+
+    .hero-copy {
+      max-width: 475px;
+      margin: 0 0 24px;
+      color: #b7c9d0;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .button-primary,
+    .button-secondary,
+    .button-quiet,
+    .button-danger {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 17px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .18s, background .18s, border-color .18s, opacity .18s;
+    }
+
+    .button-primary:hover,
+    .button-secondary:hover,
+    .button-quiet:hover,
+    .button-danger:hover {
+      transform: translateY(-1px);
+    }
+
+    .button-primary {
+      color: #081511;
+      background: var(--primary);
+      box-shadow: 0 8px 25px rgba(55, 203, 163, .18);
+    }
+
+    .button-primary:hover {
+      background: #9aefd7;
+    }
+
+    .button-secondary {
+      border-color: var(--line);
+      background: rgba(255, 255, 255, .045);
+      color: var(--text);
+    }
+
+    .button-secondary:hover {
+      border-color: rgba(117, 224, 194, .34);
+      background: rgba(255, 255, 255, .075);
+    }
+
+    .button-quiet {
+      min-height: 38px;
+      padding: 0 12px;
+      border-color: var(--line);
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .button-quiet:hover {
+      color: var(--text);
+      border-color: rgba(148, 163, 184, .3);
+    }
+
+    .button-danger {
+      border-color: rgba(255, 137, 150, .22);
+      background: rgba(255, 137, 150, .08);
+      color: var(--red);
+    }
+
+    .goal-card,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, .12);
+    }
+
+    .goal-card {
+      padding: 22px;
+    }
+
+    .goal-head,
+    .section-head,
+    .card-footer,
+    .trainer-top,
+    .trainer-bottom,
+    .stat-row,
+    .question-top,
+    .feedback-head,
+    .summary-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .goal-label,
+    .section-kicker {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .goal-value {
+      color: var(--primary);
+      font: 700 13px 'Space Mono', monospace;
+    }
+
+    .goal-ring-wrap {
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      margin: 22px 0 16px;
+    }
+
+    .goal-ring {
+      --progress: 0deg;
+      position: relative;
+      width: 77px;
+      height: 77px;
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) var(--progress), rgba(148, 163, 184, .12) 0);
+    }
+
+    .goal-ring::before {
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      background: #141f34;
+      content: '';
+    }
+
+    .goal-ring strong {
+      position: relative;
+      font: 700 17px 'Space Mono', monospace;
+    }
+
+    .goal-copy strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .goal-copy span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .progress-track {
+      height: 6px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(148, 163, 184, .12);
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary-strong), #8ce8cf);
+      transition: width .35s ease;
+    }
+
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 13px;
+      margin: 0 0 37px;
+    }
+
+    .quick-stat {
+      min-height: 92px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(18, 27, 47, .68);
+    }
+
+    .quick-stat-icon {
+      display: inline-grid;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 9px;
+      place-items: center;
+      border-radius: 9px;
+      background: rgba(117, 224, 194, .1);
+      color: var(--primary);
+      font-size: 13px;
+    }
+
+    .quick-stat-value {
+      display: block;
+      font: 800 21px 'Manrope', sans-serif;
+    }
+
+    .quick-stat-label {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .section-head {
+      margin-bottom: 17px;
+    }
+
+    .section-title {
+      margin: 0;
+      font: 800 20px 'Manrope', sans-serif;
+      letter-spacing: -.6px;
+    }
+
+    .section-description {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .catalog-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 18px;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1 1 230px;
+      min-width: 180px;
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 13px;
+      color: var(--subtle);
+      font-size: 15px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .search-input,
+    .select-input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      background: rgba(18, 27, 47, .7);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    .search-input {
+      padding: 0 14px 0 38px;
+    }
+
+    .search-input::placeholder {
+      color: var(--subtle);
+    }
+
+    .search-input:focus,
+    .select-input:focus {
+      border-color: rgba(117, 224, 194, .55);
+    }
+
+    .select-input {
+      width: auto;
+      min-width: 142px;
+      padding: 0 30px 0 12px;
+      cursor: pointer;
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 2px 0 10px;
+      scrollbar-width: thin;
+    }
+
+    .filter-chip {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(18, 27, 47, .6);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .18s;
+    }
+
+    .filter-chip:hover {
+      color: var(--text);
+      border-color: rgba(148, 163, 184, .3);
+    }
+
+    .filter-chip.active {
+      color: #091512;
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .trainer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .trainer-card {
+      min-height: 228px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: linear-gradient(155deg, rgba(22, 33, 56, .88), rgba(16, 24, 42, .8));
+      cursor: pointer;
+      transition: transform .22s, border-color .22s, background .22s, box-shadow .22s;
+    }
+
+    .trainer-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(117, 224, 194, .38);
+      background: linear-gradient(155deg, rgba(27, 45, 67, .95), rgba(17, 29, 46, .92));
+      box-shadow: 0 16px 40px rgba(0, 0, 0, .2);
+    }
+
+    .trainer-top {
+      align-items: flex-start;
+    }
+
+    .trainer-icon {
+      width: 39px;
+      height: 39px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(117, 224, 194, .15);
+      border-radius: 13px;
+      background: rgba(117, 224, 194, .08);
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .trainer-icon.blue {
+      color: var(--blue);
+      border-color: rgba(135, 169, 255, .18);
+      background: rgba(135, 169, 255, .09);
+    }
+
+    .trainer-icon.yellow {
+      color: var(--yellow);
+      border-color: rgba(255, 210, 122, .18);
+      background: rgba(255, 210, 122, .09);
+    }
+
+    .trainer-icon.purple {
+      color: var(--purple);
+      border-color: rgba(196, 162, 255, .18);
+      background: rgba(196, 162, 255, .09);
+    }
+
+    .trainer-icon.red {
+      color: var(--red);
+      border-color: rgba(255, 137, 150, .18);
+      background: rgba(255, 137, 150, .09);
+    }
+
+    .favorite-button {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--subtle);
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .favorite-button:hover {
+      border-color: var(--line);
+      background: rgba(255, 255, 255, .04);
+      color: var(--yellow);
+    }
+
+    .favorite-button.is-favorite {
+      color: var(--yellow);
+    }
+
+    .trainer-preview {
+      min-height: 45px;
+      display: flex;
+      align-items: center;
+      margin: 17px 0 12px;
+      color: #d8e2f3;
+      font: 700 17px 'Space Mono', monospace;
+      letter-spacing: -.6px;
+    }
+
+    .trainer-name {
+      margin: 0 0 5px;
+      font: 800 15px 'Manrope', sans-serif;
+      letter-spacing: -.3px;
+    }
+
+    .trainer-description {
+      min-height: 35px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .trainer-bottom {
+      margin-top: 16px;
+      padding-top: 13px;
+      border-top: 1px solid var(--line);
+      color: var(--subtle);
+      font-size: 10px;
+    }
+
+    .trainer-bottom strong {
+      color: var(--primary);
+      font-size: 11px;
+    }
+
+    .empty-state {
+      padding: 56px 20px;
+      border: 1px dashed rgba(148, 163, 184, .2);
+      border-radius: var(--radius-lg);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 29px;
+    }
+
+    .empty-state strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .trainer-layout {
+      width: min(790px, 100%);
+      margin: 0 auto;
+    }
+
+    .round-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 19px;
+    }
+
+    .back-button {
+      padding: 7px 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      color: var(--text);
+    }
+
+    .round-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .round-meta strong {
+      color: var(--text);
+    }
+
+    .timer {
+      min-width: 76px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(18, 27, 47, .7);
+      color: var(--yellow);
+      font: 700 12px 'Space Mono', monospace;
+      text-align: center;
+    }
+
+    .timer.warning {
+      border-color: rgba(255, 137, 150, .35);
+      color: var(--red);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      50% { opacity: .58; }
+    }
+
+    .round-progress {
+      margin-bottom: 16px;
+    }
+
+    .round-progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      color: var(--subtle);
+      font-size: 10px;
+    }
+
+    .question-card {
+      padding: clamp(22px, 5vw, 38px);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 95% 0%, rgba(117, 224, 194, .07), transparent 35%),
+        rgba(18, 27, 47, .88);
+      box-shadow: var(--shadow);
+    }
+
+    .question-top {
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .question-kind {
+      color: var(--primary);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+
+    .question-mode {
+      color: var(--subtle);
+      font-size: 10px;
+    }
+
+    .question-instruction {
+      margin: 0 0 23px;
+      color: #bfcae0;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.65;
+      text-align: center;
+    }
+
+    .accent-word {
+      margin: 10px 0 28px;
+      font: 700 clamp(30px, 7vw, 52px)/1.2 'Manrope', sans-serif;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .accent-vowels {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .letter-button {
+      width: 55px;
+      height: 62px;
+      border: 1px solid rgba(148, 163, 184, .16);
+      border-radius: 14px;
+      background: rgba(8, 14, 27, .6);
+      color: var(--muted);
+      font: 700 24px 'Space Mono', monospace;
+      cursor: pointer;
+      transition: .17s;
+    }
+
+    .letter-button.is-vowel {
+      border-color: rgba(117, 224, 194, .22);
+      background: rgba(117, 224, 194, .07);
+      color: var(--primary);
+    }
+
+    .letter-button.is-vowel:hover:not(:disabled) {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+      background: rgba(117, 224, 194, .15);
+    }
+
+    .letter-button.correct,
+    .option-button.correct {
+      border-color: rgba(117, 224, 194, .8);
+      background: rgba(55, 203, 163, .18);
+      color: #9af0d8;
+    }
+
+    .letter-button.wrong,
+    .option-button.wrong {
+      border-color: rgba(255, 137, 150, .75);
+      background: rgba(255, 137, 150, .12);
+      color: var(--red);
+      animation: shake .28s ease-in-out;
+    }
+
+    @keyframes shake {
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .gap-word {
+      margin: 5px 0 25px;
+      font: 700 clamp(24px, 6vw, 39px)/1.35 'Space Mono', monospace;
+      letter-spacing: -1px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .gap-mark {
+      display: inline-block;
+      min-width: 34px;
+      padding: 0 4px 3px;
+      border-bottom: 3px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .question-prompt {
+      max-width: 600px;
+      margin: 10px auto 24px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(8, 14, 27, .48);
+      color: #e2e9f5;
+      font-size: clamp(15px, 2.2vw, 19px);
+      font-weight: 600;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .blank-word {
+      display: inline-block;
+      min-width: 90px;
+      padding: 2px 8px 3px;
+      border-bottom: 2px dashed var(--primary);
+      color: var(--primary);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      max-width: 590px;
+      margin: 0 auto;
+    }
+
+    .options-grid.single-column {
+      grid-template-columns: 1fr;
+    }
+
+    .option-button {
+      min-height: 52px;
+      padding: 12px 15px;
+      border: 1px solid rgba(148, 163, 184, .15);
+      border-radius: 13px;
+      background: rgba(8, 14, 27, .48);
+      color: #dbe4f4;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      transition: .17s;
+    }
+
+    .option-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: rgba(117, 224, 194, .45);
+      background: rgba(117, 224, 194, .08);
+    }
+
+    .option-letter {
+      display: inline-grid;
+      width: 25px;
+      height: 25px;
+      margin-right: 9px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      font: 700 10px 'Space Mono', monospace;
+      vertical-align: middle;
+    }
+
+    .keyboard-hint {
+      margin-top: 20px;
+      color: var(--subtle);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    kbd {
+      padding: 2px 5px;
+      border: 1px solid rgba(148, 163, 184, .22);
+      border-radius: 5px;
+      background: rgba(255, 255, 255, .04);
+      color: #a7b3c8;
+      font: 10px 'Space Mono', monospace;
+    }
+
+    .feedback-panel {
+      margin-top: 22px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(8, 14, 27, .57);
+      animation: slide-up .2s ease-out;
+    }
+
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-head {
+      justify-content: flex-start;
+      margin-bottom: 7px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .feedback-head.correct-text {
+      color: var(--primary);
+    }
+
+    .feedback-head.wrong-text {
+      color: var(--red);
+    }
+
+    .feedback-rule {
+      margin: 0;
+      color: #aab6cb;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .next-button {
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    .summary-wrap {
+      width: min(720px, 100%);
+      margin: 0 auto;
+    }
+
+    .summary-card {
+      padding: clamp(22px, 5vw, 38px);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 50% -5%, rgba(117, 224, 194, .11), transparent 38%),
+        var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .summary-top {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .summary-medal {
+      width: 66px;
+      height: 66px;
+      display: grid;
+      margin-bottom: 13px;
+      place-items: center;
+      border: 1px solid rgba(117, 224, 194, .24);
+      border-radius: 22px;
+      background: rgba(117, 224, 194, .1);
+      font-size: 29px;
+    }
+
+    .summary-title {
+      margin: 0;
+      font: 800 26px 'Manrope', sans-serif;
+      letter-spacing: -.8px;
+    }
+
+    .summary-description {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-score {
+      margin: 24px auto;
+      text-align: center;
+    }
+
+    .score-number {
+      color: var(--primary);
+      font: 800 clamp(44px, 10vw, 70px)/1 'Manrope', sans-serif;
+      letter-spacing: -4px;
+    }
+
+    .score-caption {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .summary-stat {
+      padding: 14px 10px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(8, 14, 27, .4);
+      text-align: center;
+    }
+
+    .summary-stat strong {
+      display: block;
+      font: 700 19px 'Space Mono', monospace;
+    }
+
+    .summary-stat span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .mistake-list {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .mistake-list h3 {
+      margin: 0 0 12px;
+      font: 800 14px 'Manrope', sans-serif;
+    }
+
+    .mistake-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, .08);
+    }
+
+    .mistake-item:last-child {
+      border-bottom: 0;
+    }
+
+    .mistake-mark {
+      color: var(--red);
+      font-size: 12px;
+    }
+
+    .mistake-word {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .mistake-rule {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .summary-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px;
+      margin-top: 24px;
+    }
+
+    .stats-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .panel {
+      padding: 21px;
+    }
+
+    .panel-title {
+      margin: 0 0 17px;
+      font: 800 14px 'Manrope', sans-serif;
+    }
+
+    .stat-row {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, .09);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stat-row:last-child {
+      border-bottom: 0;
+    }
+
+    .stat-row strong {
+      color: var(--text);
+      font: 700 12px 'Space Mono', monospace;
+    }
+
+    .trainer-progress-item {
+      margin-bottom: 16px;
+    }
+
+    .trainer-progress-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .trainer-progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: 11px;
+    }
+
+    .trainer-progress-label span {
+      color: var(--muted);
+    }
+
+    .trainer-progress-label strong {
+      color: var(--primary);
+      font: 700 10px 'Space Mono', monospace;
+    }
+
+    .settings-box {
+      max-width: 650px;
+      margin: 25px auto 0;
+      padding: 23px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 17px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, .09);
+    }
+
+    .setting-row:last-child {
+      border-bottom: 0;
+    }
+
+    .setting-title {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .setting-description {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .toggle {
+      position: relative;
+      width: 45px;
+      height: 26px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(148, 163, 184, .2);
+      border-radius: 999px;
+      background: #27334a;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .toggle::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #b0bdcf;
+      content: '';
+      transition: .2s;
+    }
+
+    .toggle.on {
+      border-color: rgba(117, 224, 194, .5);
+      background: rgba(55, 203, 163, .35);
+    }
+
+    .toggle.on::after {
+      left: 22px;
+      background: var(--primary);
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 20px 0 24px;
+      border-top: 1px solid var(--line);
+      color: var(--subtle);
+      font-size: 10px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 15px;
+    }
+
+    .footer button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--subtle);
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .footer button:hover {
+      color: var(--muted);
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 20;
+      max-width: min(360px, calc(100vw - 32px));
+      padding: 13px 16px;
+      border: 1px solid rgba(117, 224, 194, .3);
+      border-radius: 13px;
+      background: #172a32;
+      box-shadow: var(--shadow);
+      color: #dffaf1;
+      font-size: 12px;
+      animation: slide-up .2s ease-out;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      padding: 20px;
+      place-items: center;
+      background: rgba(4, 8, 17, .75);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal {
+      width: min(440px, 100%);
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #131d32;
+      box-shadow: var(--shadow);
+    }
+
+    .modal h2 {
+      margin: 0 0 9px;
+      font: 800 19px 'Manrope', sans-serif;
+    }
+
+    .modal p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+      margin-top: 22px;
+    }
+
+    @media (max-width: 1000px) {
+      .trainer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dashboard-grid {
+        grid-template-columns: minmax(0, 1fr) 260px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app-shell {
+        padding: 0 20px;
+      }
+
+      .page {
+        padding-top: 27px;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        min-height: 218px;
+      }
+
+      .goal-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 5px 15px;
+      }
+
+      .goal-head {
+        grid-column: 1 / -1;
+      }
+
+      .goal-ring-wrap {
+        margin: 13px 0 8px;
+      }
+
+      .goal-card .progress-track {
+        grid-column: 1 / -1;
+      }
+
+      .quick-stats {
+        margin-bottom: 30px;
+      }
+
+      .stats-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app-shell {
+        padding: 0 15px;
+      }
+
+      .topbar {
+        min-height: 70px;
+      }
+
+      .brand-mark {
+        width: 37px;
+        height: 37px;
+        border-radius: 13px;
+      }
+
+      .brand-name {
+        font-size: 17px;
+      }
+
+      .brand-caption {
+        font-size: 10px;
+      }
+
+      .header-actions {
+        gap: 6px;
+      }
+
+      .header-stat {
+        display: none;
+      }
+
+      .user-chip {
+        min-height: 36px;
+        padding: 0 9px;
+        font-size: 11px;
+      }
+
+      .icon-button {
+        width: 37px;
+        height: 37px;
+      }
+
+      .page-title {
+        font-size: 31px;
+      }
+
+      .hero-card {
+        min-height: 230px;
+        padding: 23px;
+      }
+
+      .hero-title {
+        font-size: 29px;
+      }
+
+      .quick-stats {
+        gap: 8px;
+      }
+
+      .quick-stat {
+        min-height: 82px;
+        padding: 12px;
+      }
+
+      .quick-stat-value {
+        font-size: 18px;
+      }
+
+      .quick-stat-label {
+        font-size: 10px;
+      }
+
+      .trainer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .trainer-card {
+        min-height: 205px;
+      }
+
+      .catalog-tools {
+        gap: 7px;
+      }
+
+      .search-box {
+        flex-basis: 100%;
+      }
+
+      .select-input {
+        flex: 1;
+      }
+
+      .round-toolbar {
+        align-items: flex-start;
+      }
+
+      .round-meta {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .round-meta strong {
+        max-width: 130px;
+        text-align: right;
+      }
+
+      .question-card {
+        padding: 21px 16px;
+        border-radius: 21px;
+      }
+
+      .letter-button {
+        width: 48px;
+        height: 55px;
+        font-size: 21px;
+      }
+
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-stats {
+        gap: 6px;
+      }
+
+      .summary-stat {
+        padding: 12px 6px;
+      }
+
+      .summary-stat strong {
+        font-size: 16px;
+      }
+
+      .summary-stat span {
+        font-size: 9px;
+      }
+
+      .summary-actions {
+        flex-direction: column;
+      }
+
+      .summary-actions > button {
+        width: 100%;
+      }
+
+      .footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toast {
+        right: 16px;
+        bottom: 16px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -46,359 +1620,1070 @@
       *::before,
       *::after {
         scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
+        animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition-duration: .01ms !important;
       }
     }
   </style>
 </head>
 
-<body class="min-h-screen flex flex-col text-slate-100 selection:bg-sky-500 selection:text-slate-950">
-  <div id="app" class="flex-1 flex flex-col max-w-6xl w-full mx-auto p-4 md:p-8">
-
-    <header class="flex items-center justify-between gap-4 border-b border-slate-800/80 pb-5 mb-8">
-      <button
-        type="button"
-        class="flex items-center gap-3.5 text-left"
-        aria-label="На главную"
-        @click="goHome">
-        <span class="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 flex items-center justify-center font-black text-xl text-slate-950 shadow-lg shadow-sky-500/20">
-          LX
-        </span>
-
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <button type="button" class="brand" aria-label="На главную" @click="goHome">
+        <span class="brand-mark">LX</span>
         <span>
-          <span class="block font-extrabold text-xl tracking-tight">Learnix</span>
-          <span class="block text-xs text-slate-400">Тренажёры русского языка</span>
+          <span class="brand-name">Learnix</span>
+          <span class="brand-caption">Тренажёры русского языка</span>
         </span>
       </button>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <div class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300">
-          <span>Решено:</span>
-          <span class="text-sky-400 font-mono">{{ totalSolved }}</span>
-        </div>
+      <div class="header-actions">
+        <button type="button" class="header-stat" @click="setView('stats')" title="Открыть статистику">
+          <span>Опыт</span>
+          <strong>{{ stats.xp }} XP</strong>
+        </button>
 
-        <div
-          class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-sm font-semibold text-amber-400"
-          :aria-label="`Серия правильных ответов: ${streak}`">
+        <div class="user-chip" :title="`Серия правильных ответов: ${stats.streak}`">
           <span aria-hidden="true">🔥</span>
-          <span class="font-mono">{{ streak }}</span>
-          <span class="text-xs text-slate-500 font-normal hidden md:inline">серия</span>
+          <span>{{ stats.streak }}</span>
         </div>
 
         <button
           type="button"
-          @click="toggleSound"
-          :aria-label="soundEnabled ? 'Выключить звук' : 'Включить звук'"
-          :title="soundEnabled ? 'Выключить звук' : 'Включить звук'"
-          class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition">
-          <span aria-hidden="true">{{ soundEnabled ? '🔊' : '🔇' }}</span>
+          class="icon-button"
+          @click="setView('settings')"
+          aria-label="Настройки"
+          title="Настройки">
+          ⚙
         </button>
       </div>
     </header>
 
-    <!-- Каталог -->
-    <main v-if="currentView === 'catalog'" class="flex-1">
-      <div class="flex items-end justify-between flex-wrap gap-4 mb-6">
-        <div>
-          <h1 class="text-2xl md:text-3xl font-extrabold text-white">Тренажёры русского языка</h1>
-          <p class="text-slate-400 text-sm mt-2">
-            Практикуйте орфографию, произношение и точность словоупотребления.
-          </p>
-        </div>
-
-        <div class="flex gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 text-xs max-w-full overflow-x-auto">
-          <button
-            v-for="category in categories"
-            :key="category.id"
-            type="button"
-            @click="activeCategory = category.id"
-            :aria-pressed="activeCategory === category.id"
-            :class="[
-              'px-3 py-2 rounded-lg font-medium transition whitespace-nowrap',
-              activeCategory === category.id
-                ? 'bg-sky-500 text-slate-950 font-bold'
-                : 'text-slate-400 hover:text-white'
-            ]">
-            {{ category.title }}
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <article
-          v-for="trainer in filteredTrainers"
-          :key="trainer.id"
-          role="button"
-          tabindex="0"
-          @click="startTrainer(trainer.id)"
-          @keydown.enter="startTrainer(trainer.id)"
-          @keydown.space.prevent="startTrainer(trainer.id)"
-          class="group bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-sky-500/50 rounded-2xl p-6 transition-all duration-300 cursor-pointer flex flex-col justify-between card-glow">
-          <div>
-            <div class="flex items-center justify-between gap-3 mb-4">
-              <span class="text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-md bg-slate-800 text-sky-400 border border-slate-700">
-                {{ trainer.tag }}
-              </span>
-              <span class="text-xs text-slate-500 font-mono whitespace-nowrap">
-                {{ trainer.questions.length }} заданий
-              </span>
-            </div>
-
-            <div class="h-16 flex items-center justify-center my-3 bg-slate-950/40 rounded-xl border border-slate-800/50">
-              <span class="font-mono text-xl font-bold tracking-wider text-slate-300 group-hover:text-white transition">
-                {{ trainer.preview }}
-              </span>
-            </div>
-
-            <h2 class="font-bold text-lg mb-1.5 text-white group-hover:text-sky-400 transition">
-              {{ trainer.title }}
-            </h2>
-            <p class="text-slate-400 text-sm leading-relaxed">{{ trainer.description }}</p>
-          </div>
-
-          <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs font-semibold text-sky-400">
-            <span>Начать тренировку</span>
-            <span class="text-base group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
-          </div>
-        </article>
-
-        <p v-if="filteredTrainers.length === 0" class="text-slate-400 col-span-full py-12 text-center">
-          В этом разделе пока нет тренажёров.
-        </p>
-      </div>
-    </main>
-
-    <!-- Тренировка -->
-    <main v-else-if="currentView === 'trainer'" class="flex-1 flex flex-col justify-center items-center">
-      <div class="w-full max-w-xl">
-        <div class="flex items-center justify-between gap-3 mb-3 text-xs text-slate-400">
-          <button
-            type="button"
-            @click="goHome"
-            class="flex items-center gap-1.5 hover:text-white transition font-medium">
-            <span aria-hidden="true">←</span>
-            Выйти в меню
-          </button>
-
-          <div class="flex items-center gap-3 text-right">
-            <span class="font-semibold text-slate-300">{{ currentTrainer.title }}</span>
-            <span class="font-mono text-sky-400 whitespace-nowrap">
-              {{ currentIndex + 1 }} / {{ activeList.length }}
-            </span>
-          </div>
-        </div>
-
-        <div
-          class="w-full h-1.5 bg-slate-900 rounded-full mb-6 overflow-hidden border border-slate-800/60"
-          role="progressbar"
-          :aria-valuenow="currentIndex + 1"
-          :aria-valuemin="1"
-          :aria-valuemax="activeList.length"
-          :aria-label="`Задание ${currentIndex + 1} из ${activeList.length}`">
-          <div
-            class="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-300"
-            :style="{ width: `${((currentIndex + 1) / activeList.length) * 100}%` }"></div>
-        </div>
-
-        <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl">
-          <!-- Ударения -->
-          <div v-if="currentTrainer.type === 'accents'" class="text-center py-4">
-            <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">
-              Выберите гласную, на которую падает ударение
-            </p>
-
-            <div class="flex justify-center items-center gap-2 mb-8 flex-wrap">
-              <button
-                v-for="(letter, index) in currentQuestion.letters"
-                :key="index"
-                type="button"
-                @click="handleAccentClick(letter, index)"
-                :disabled="answered || !letter.isVowel"
-                :aria-label="`${letter.char}, позиция ${index + 1}`"
-                :class="[
-                  'w-11 h-14 md:w-14 md:h-16 text-2xl md:text-3xl font-mono font-bold rounded-xl transition-all duration-200 border flex items-center justify-center',
-                  letter.isVowel ? 'cursor-pointer hover:-translate-y-1' : 'cursor-default opacity-80',
-                  getLetterClass(letter, index)
-                ]">
-                {{ letter.char }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Пропуск буквы -->
-          <div v-else-if="currentTrainer.type === 'letter_gap'" class="text-center py-4">
-            <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">
-              {{ currentQuestion.instruction || 'Выберите правильный вариант' }}
-            </p>
-
-            <div class="font-mono text-3xl md:text-4xl font-bold tracking-wider mb-8 break-words">
-              <span>{{ currentQuestion.prefix }}</span>
-              <span class="inline-block px-2 text-sky-400 border-b-4 border-sky-400 mx-1">
-                {{ answered ? currentQuestion.correctLetter : '?' }}
-              </span>
-              <span>{{ currentQuestion.suffix }}</span>
-            </div>
-
-            <div class="flex justify-center gap-3 flex-wrap">
-              <button
-                v-for="option in currentQuestion.options"
-                :key="option"
-                type="button"
-                @click="handleOptionClick(option)"
-                :disabled="answered"
-                :class="[
-                  'min-w-[64px] px-5 h-14 text-xl font-mono font-bold rounded-xl border transition-all duration-200',
-                  getOptionBtnClass(option)
-                ]">
-                {{ option }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Паронимы -->
-          <div v-else-if="currentTrainer.type === 'paronyms'" class="py-2">
-            <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-4 text-center">
-              Выберите слово, подходящее по смыслу
-            </p>
-
-            <div class="text-base md:text-lg font-medium leading-relaxed mb-6 text-center text-slate-200 bg-slate-950/40 p-4 rounded-xl border border-slate-800">
-              {{ currentQuestion.sentenceBefore }}
-              <span class="px-2.5 py-1 rounded bg-sky-950 text-sky-400 border border-sky-800 font-bold mx-1">
-                [ ... ]
-              </span>
-              {{ currentQuestion.sentenceAfter }}
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                v-for="word in currentQuestion.options"
-                :key="word"
-                type="button"
-                @click="handleParonymClick(word)"
-                :disabled="answered"
-                :class="[
-                  'p-4 rounded-xl text-left border font-semibold text-sm transition-all duration-200',
-                  getParonymBtnClass(word)
-                ]">
-                {{ word }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Обратная связь -->
-          <div v-if="answered" class="mt-6 pt-5 border-t border-slate-800/80 text-left">
-            <div class="flex items-start gap-3 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
-              <span class="text-2xl" aria-hidden="true">
-                {{ answerStatus === 'correct' ? '✅' : '❌' }}
-              </span>
-
-              <div class="text-sm space-y-1.5 flex-1">
-                <p class="font-bold text-slate-200">
-                  {{ answerStatus === 'correct' ? 'Верно!' : 'Неверно. Правильный ответ выделен зелёным.' }}
+    <Transition name="page" mode="out-in">
+      <main :key="currentView" class="page">
+        <!-- Главная -->
+        <section v-if="currentView === 'catalog'">
+          <div class="dashboard-grid">
+            <div class="hero-card">
+              <div class="hero-content">
+                <span class="eyebrow">Твоя практика начинается здесь</span>
+                <h1 class="hero-title">Русский язык — уверенно и без зубрёжки</h1>
+                <p class="hero-copy">
+                  Короткие тренировки, понятные объяснения и повторение сложных заданий.
+                  Занимайся в своём темпе и следи за прогрессом.
                 </p>
-                <p class="text-slate-300 leading-relaxed font-normal">{{ currentQuestion.rule }}</p>
+                <button type="button" class="button-primary" @click="startRandomTrainer">
+                  <span>Начать тренировку</span>
+                  <span aria-hidden="true">→</span>
+                </button>
               </div>
             </div>
 
-            <button
-              type="button"
-              @click="nextQuestion"
-              class="w-full mt-4 py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-sky-500/20 active:scale-[0.99]">
-              {{ currentIndex + 1 < activeList.length ? 'Следующее задание →' : 'Посмотреть результаты 📊' }}
+            <aside class="goal-card">
+              <div class="goal-head">
+                <span class="goal-label">Цель на сегодня</span>
+                <span class="goal-value">{{ todaySolved }} / {{ dailyGoal }}</span>
+              </div>
+
+              <div class="goal-ring-wrap">
+                <div class="goal-ring" :style="{ '--progress': `${dailyProgress * 3.6}deg` }">
+                  <strong>{{ dailyProgress }}%</strong>
+                </div>
+                <div class="goal-copy">
+                  <strong>{{ dailyGoalDone ? 'Цель выполнена!' : 'Ещё немного' }}</strong>
+                  <span>{{ dailyGoalDone ? 'Отличная работа — продолжай в том же духе.' : `Реши ещё ${Math.max(0, dailyGoal - todaySolved)} заданий сегодня.` }}</span>
+                </div>
+              </div>
+
+              <div class="progress-track">
+                <div class="progress-fill" :style="{ width: `${dailyProgress}%` }"></div>
+              </div>
+            </aside>
+          </div>
+
+          <div class="quick-stats">
+            <div class="quick-stat">
+              <span class="quick-stat-icon">✓</span>
+              <strong class="quick-stat-value">{{ stats.totalSolved }}</strong>
+              <span class="quick-stat-label">заданий решено</span>
+            </div>
+            <div class="quick-stat">
+              <span class="quick-stat-icon">◉</span>
+              <strong class="quick-stat-value">{{ overallAccuracy }}%</strong>
+              <span class="quick-stat-label">точность ответов</span>
+            </div>
+            <div class="quick-stat">
+              <span class="quick-stat-icon">▱</span>
+              <strong class="quick-stat-value">{{ completedTrainers }}</strong>
+              <span class="quick-stat-label">тем пройдено</span>
+            </div>
+          </div>
+
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">Выбери тему</h2>
+              <p class="section-description">Все тренажёры — в одном месте. Ищи нужную тему или открывай случайную.</p>
+            </div>
+            <button type="button" class="button-quiet" @click="setView('stats')">
+              Моя статистика <span aria-hidden="true">↗</span>
             </button>
           </div>
+
+          <div class="catalog-tools">
+            <label class="search-box">
+              <span class="search-icon" aria-hidden="true">⌕</span>
+              <input
+                v-model.trim="searchQuery"
+                class="search-input"
+                type="search"
+                placeholder="Найти тренажёр..."
+                aria-label="Поиск тренажёра">
+            </label>
+
+            <select v-model="sortMode" class="select-input" aria-label="Порядок сортировки">
+              <option value="default">Сначала рекомендуемые</option>
+              <option value="progress">Сначала начатые</option>
+              <option value="name">По названию</option>
+            </select>
+
+            <button
+              type="button"
+              class="button-quiet"
+              :aria-pressed="showFavoritesOnly"
+              @click="showFavoritesOnly = !showFavoritesOnly">
+              <span>{{ showFavoritesOnly ? '★' : '☆' }}</span>
+              {{ showFavoritesOnly ? 'Избранное' : 'Все темы' }}
+            </button>
+          </div>
+
+          <div class="filter-row" aria-label="Фильтр по разделам">
+            <button
+              v-for="category in categories"
+              :key="category.id"
+              type="button"
+              class="filter-chip"
+              :class="{ active: activeCategory === category.id }"
+              :aria-pressed="activeCategory === category.id"
+              @click="activeCategory = category.id">
+              {{ category.title }}
+            </button>
+          </div>
+
+          <div v-if="filteredTrainers.length" class="trainer-grid">
+            <article
+              v-for="trainer in filteredTrainers"
+              :key="trainer.id"
+              class="trainer-card"
+              tabindex="0"
+              role="button"
+              :aria-label="`Открыть тренажёр: ${trainer.title}`"
+              @click="openTrainer(trainer.id)"
+              @keydown.enter="openTrainer(trainer.id)"
+              @keydown.space.prevent="openTrainer(trainer.id)">
+              <div>
+                <div class="trainer-top">
+                  <span class="trainer-icon" :class="trainer.color">{{ trainer.icon }}</span>
+
+                  <button
+                    type="button"
+                    class="favorite-button"
+                    :class="{ 'is-favorite': isFavorite(trainer.id) }"
+                    :aria-label="isFavorite(trainer.id) ? 'Убрать из избранного' : 'Добавить в избранное'"
+                    :aria-pressed="isFavorite(trainer.id)"
+                    @click.stop="toggleFavorite(trainer.id)">
+                    {{ isFavorite(trainer.id) ? '★' : '☆' }}
+                  </button>
+                </div>
+
+                <div class="trainer-preview">{{ trainer.preview }}</div>
+                <h3 class="trainer-name">{{ trainer.title }}</h3>
+                <p class="trainer-description">{{ trainer.description }}</p>
+              </div>
+
+              <div class="trainer-bottom">
+                <span>{{ trainer.questions.length }} заданий · {{ trainer.categoryTitle }}</span>
+                <strong>
+                  {{ trainerProgress(trainer.id) ? `Пройдено ${trainerProgress(trainer.id)}%` : 'Начать →' }}
+                </strong>
+              </div>
+            </article>
+          </div>
+
+          <div v-else class="empty-state">
+            <span class="empty-state-icon" aria-hidden="true">⌕</span>
+            <strong>Ничего не найдено</strong>
+            <span>Попробуй изменить запрос или выбрать другой раздел.</span>
+          </div>
         </section>
+
+        <!-- Тренировка -->
+        <section v-else-if="currentView === 'trainer'" class="trainer-layout">
+          <div class="round-toolbar">
+            <button type="button" class="back-button" @click="confirmExit">
+              <span aria-hidden="true">←</span> Выйти из тренировки
+            </button>
+
+            <div class="round-meta">
+              <strong>{{ currentTrainer.title }}</strong>
+              <span>{{ currentIndex + 1 }} / {{ activeList.length }}</span>
+              <span v-if="roundMode === 'sprint'" class="timer" :class="{ warning: timerSeconds <= 15 }">
+                {{ formattedTimer }}
+              </span>
+            </div>
+          </div>
+
+          <div class="round-progress">
+            <div class="round-progress-label">
+              <span>{{ roundMode === 'sprint' ? 'Раунд на время' : 'Тренировка' }}</span>
+              <span>{{ Math.round(((currentIndex + 1) / activeList.length) * 100) }}%</span>
+            </div>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                :style="{ width: `${((currentIndex + 1) / activeList.length) * 100}%` }"></div>
+            </div>
+          </div>
+
+          <div v-if="currentQuestion" class="question-card">
+            <div class="question-top">
+              <span class="question-kind">{{ currentTrainer.categoryTitle }}</span>
+              <span class="question-mode">{{ roundMode === 'sprint' ? '⚡ Режим на время' : 'Спокойный режим' }}</span>
+            </div>
+
+            <!-- Ударение -->
+            <template v-if="currentTrainer.type === 'accent'">
+              <p class="question-instruction">Нажми на гласную, на которую падает ударение.</p>
+
+              <div class="accent-word" aria-label="Слово для задания">
+                {{ currentQuestion.rawWord }}
+              </div>
+
+              <div class="accent-vowels">
+                <button
+                  v-for="(letter, index) in currentQuestion.letters"
+                  :key="index"
+                  type="button"
+                  class="letter-button"
+                  :class="letterButtonClass(letter, index)"
+                  :disabled="answered || !letter.isVowel"
+                  :aria-label="`${letter.char}, позиция ${index + 1}`"
+                  @click="answerAccent(index)">
+                  {{ letter.char }}
+                </button>
+              </div>
+            </template>
+
+            <!-- Пропуск буквы -->
+            <template v-else-if="currentTrainer.type === 'gap'">
+              <p class="question-instruction">{{ currentQuestion.instruction }}</p>
+
+              <div class="gap-word">
+                <span>{{ currentQuestion.prefix }}</span>
+                <span class="gap-mark">{{ answered ? currentQuestion.correctAnswer : '＿' }}</span>
+                <span>{{ currentQuestion.suffix }}</span>
+              </div>
+
+              <div class="options-grid">
+                <button
+                  v-for="(option, index) in currentQuestion.options"
+                  :key="option"
+                  type="button"
+                  class="option-button"
+                  :class="optionButtonClass(option, currentQuestion.correctAnswer)"
+                  :disabled="answered"
+                  @click="answerChoice(option)">
+                  <span class="option-letter">{{ index + 1 }}</span>
+                  {{ option }}
+                </button>
+              </div>
+            </template>
+
+            <!-- Выбор слова или знака -->
+            <template v-else>
+              <p class="question-instruction">{{ currentQuestion.instruction }}</p>
+
+              <div class="question-prompt">
+                <template v-if="currentQuestion.before">{{ currentQuestion.before }} </template>
+                <span class="blank-word">{{ answered ? currentQuestion.correctAnswer : '…' }}</span>
+                <template v-if="currentQuestion.after"> {{ currentQuestion.after }}</template>
+                <template v-if="currentQuestion.prompt">{{ currentQuestion.prompt }}</template>
+              </div>
+
+              <div class="options-grid" :class="{ 'single-column': currentQuestion.options.length > 2 }">
+                <button
+                  v-for="(option, index) in currentQuestion.options"
+                  :key="option"
+                  type="button"
+                  class="option-button"
+                  :class="optionButtonClass(option, currentQuestion.correctAnswer)"
+                  :disabled="answered"
+                  @click="answerChoice(option)">
+                  <span class="option-letter">{{ index + 1 }}</span>
+                  {{ option }}
+                </button>
+              </div>
+            </template>
+
+            <p v-if="!answered" class="keyboard-hint">
+              Можно отвечать с клавиатуры:
+              <kbd>1</kbd>–<kbd>4</kbd>
+            </p>
+
+            <div v-if="answered" class="feedback-panel" aria-live="polite">
+              <div class="feedback-head" :class="answerStatus === 'correct' ? 'correct-text' : 'wrong-text'">
+                <span>{{ answerStatus === 'correct' ? '✓' : '×' }}</span>
+                <span>{{ answerStatus === 'correct' ? 'Правильно!' : `Правильный ответ: ${currentQuestion.correctAnswer}` }}</span>
+              </div>
+
+              <p class="feedback-rule">{{ currentQuestion.rule }}</p>
+
+              <button type="button" class="button-primary next-button" @click="nextQuestion">
+                {{ isLastQuestion ? 'Завершить раунд' : 'Следующее задание' }}
+                <span aria-hidden="true">{{ isLastQuestion ? '✓' : '→' }}</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Итоги -->
+        <section v-else-if="currentView === 'summary'" class="summary-wrap">
+          <div class="summary-card">
+            <div class="summary-top">
+              <div class="summary-medal">{{ summaryEmoji }}</div>
+              <h1 class="summary-title">{{ summaryTitle }}</h1>
+              <p class="summary-description">{{ currentTrainer.title }} · раунд завершён</p>
+            </div>
+
+            <div class="summary-score">
+              <div class="score-number">{{ roundAccuracy }}%</div>
+              <div class="score-caption">правильных ответов</div>
+            </div>
+
+            <div class="summary-stats">
+              <div class="summary-stat">
+                <strong>{{ roundCorrect }}</strong>
+                <span>верно</span>
+              </div>
+              <div class="summary-stat">
+                <strong>{{ mistakesList.length }}</strong>
+                <span>ошибок</span>
+              </div>
+              <div class="summary-stat">
+                <strong>+{{ lastRoundXp }}</strong>
+                <span>опыта</span>
+              </div>
+            </div>
+
+            <div v-if="mistakesList.length" class="mistake-list">
+              <h3>Разбор ошибок</h3>
+              <div v-for="(mistake, index) in mistakesList" :key="`${mistake.id}-${index}`" class="mistake-item">
+                <span class="mistake-mark">×</span>
+                <div>
+                  <div class="mistake-word">{{ questionLabel(mistake) }}</div>
+                  <div class="mistake-rule">{{ mistake.rule }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="summary-actions">
+              <button
+                v-if="mistakesList.length"
+                type="button"
+                class="button-primary"
+                @click="startMistakesReview">
+                Повторить ошибки <span aria-hidden="true">↻</span>
+              </button>
+              <button type="button" class="button-secondary" @click="restartTrainer">
+                Пройти ещё раз
+              </button>
+              <button type="button" class="button-quiet" @click="goHome">
+                В каталог
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Статистика -->
+        <section v-else-if="currentView === 'stats'">
+          <span class="eyebrow">Твой прогресс</span>
+          <h1 class="page-title">Статистика</h1>
+          <p class="page-subtitle">Следи за результатами, возвращайся к пройденным темам и отмечай свой рост.</p>
+
+          <div class="stats-layout">
+            <div class="panel">
+              <h2 class="panel-title">Общие результаты</h2>
+              <div class="stat-row"><span>Решено заданий</span><strong>{{ stats.totalSolved }}</strong></div>
+              <div class="stat-row"><span>Правильных ответов</span><strong>{{ stats.correctAnswers }}</strong></div>
+              <div class="stat-row"><span>Точность</span><strong>{{ overallAccuracy }}%</strong></div>
+              <div class="stat-row"><span>Очки опыта</span><strong>{{ stats.xp }} XP</strong></div>
+              <div class="stat-row"><span>Текущая серия</span><strong>{{ stats.streak }} 🔥</strong></div>
+              <div class="stat-row"><span>Лучшая серия</span><strong>{{ stats.bestStreak }}</strong></div>
+              <div class="stat-row"><span>Тренировок завершено</span><strong>{{ stats.roundsCompleted }}</strong></div>
+              <div class="stat-row"><span>Заданий сегодня</span><strong>{{ todaySolved }} / {{ dailyGoal }}</strong></div>
+            </div>
+
+            <div class="panel">
+              <h2 class="panel-title">Прогресс по темам</h2>
+              <div v-for="trainer in trainers" :key="trainer.id" class="trainer-progress-item">
+                <div class="trainer-progress-label">
+                  <span>{{ trainer.title }}</span>
+                  <strong>{{ trainerProgress(trainer.id) }}%</strong>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" :style="{ width: `${trainerProgress(trainer.id)}%` }"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-actions">
+            <button type="button" class="button-primary" @click="goHome">К тренажёрам</button>
+          </div>
+        </section>
+
+        <!-- Настройки -->
+        <section v-else-if="currentView === 'settings'">
+          <span class="eyebrow">Персонализация</span>
+          <h1 class="page-title">Настройки</h1>
+          <p class="page-subtitle">Настрой приложение под себя. Прогресс хранится в этом браузере на устройстве.</p>
+
+          <div class="settings-box">
+            <div class="setting-row">
+              <div>
+                <div class="setting-title">Звуковые эффекты</div>
+                <div class="setting-description">Короткий звук при правильном или неправильном ответе.</div>
+              </div>
+              <button
+                type="button"
+                class="toggle"
+                :class="{ on: settings.sound }"
+                role="switch"
+                :aria-checked="settings.sound"
+                aria-label="Звуковые эффекты"
+                @click="toggleSetting('sound')"></button>
+            </div>
+
+            <div class="setting-row">
+              <div>
+                <div class="setting-title">Перемешивать задания</div>
+                <div class="setting-description">Порядок вопросов будет меняться в каждом новом раунде.</div>
+              </div>
+              <button
+                type="button"
+                class="toggle"
+                :class="{ on: settings.shuffle }"
+                role="switch"
+                :aria-checked="settings.shuffle"
+                aria-label="Перемешивать задания"
+                @click="toggleSetting('shuffle')"></button>
+            </div>
+
+            <div class="setting-row">
+              <div>
+                <div class="setting-title">Ежедневная цель</div>
+                <div class="setting-description">Сколько заданий ты хочешь решить за день.</div>
+              </div>
+              <select v-model.number="dailyGoal" class="select-input" @change="saveDailyGoal">
+                <option :value="5">5 заданий</option>
+                <option :value="10">10 заданий</option>
+                <option :value="15">15 заданий</option>
+                <option :value="20">20 заданий</option>
+              </select>
+            </div>
+
+            <div class="setting-row">
+              <div>
+                <div class="setting-title">Сбросить прогресс</div>
+                <div class="setting-description">Удалить статистику, избранное и результаты тренировок.</div>
+              </div>
+              <button type="button" class="button-danger" @click="showResetModal = true">
+                Сбросить
+              </button>
+            </div>
+          </div>
+
+          <div class="summary-actions">
+            <button type="button" class="button-primary" @click="goHome">Вернуться к темам</button>
+          </div>
+        </section>
+      </main>
+    </Transition>
+
+    <footer class="footer">
+      <span>Learnix · Учебный проект для практики русского языка</span>
+      <div class="footer-links">
+        <button type="button" @click="setView('stats')">Статистика</button>
+        <button type="button" @click="setView('settings')">Настройки</button>
       </div>
-    </main>
-
-    <!-- Результаты -->
-    <main v-else-if="currentView === 'summary'" class="flex-1 flex flex-col justify-center items-center">
-      <section class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl">
-        <div class="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-3xl mx-auto mb-4">
-          {{ roundAccuracy >= 80 ? '🏆' : '📖' }}
-        </div>
-
-        <h2 class="text-2xl font-bold mb-1">Раунд завершён</h2>
-        <p class="text-sm text-slate-400 mb-6">{{ currentTrainer.title }}</p>
-
-        <div class="grid grid-cols-2 gap-3 mb-6">
-          <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-            <p class="text-[11px] text-slate-500 uppercase font-bold">Правильных ответов</p>
-            <p class="text-2xl font-black text-sky-400 font-mono mt-0.5">{{ roundAccuracy }}%</p>
-          </div>
-          <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-            <p class="text-[11px] text-slate-500 uppercase font-bold">Ошибок</p>
-            <p class="text-2xl font-black text-rose-400 font-mono mt-0.5">{{ mistakesList.length }}</p>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-2.5">
-          <button
-            v-if="mistakesList.length > 0"
-            type="button"
-            @click="startMistakesReview"
-            class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition flex items-center justify-center gap-2">
-            <span aria-hidden="true">🔄</span>
-            Повторить ошибки ({{ mistakesList.length }})
-          </button>
-
-          <button
-            type="button"
-            @click="startTrainer(currentTrainer.id)"
-            class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition">
-            Пройти блок ещё раз
-          </button>
-
-          <button
-            type="button"
-            @click="goHome"
-            class="w-full py-3 rounded-xl border border-slate-800 hover:bg-slate-800/40 text-slate-400 hover:text-white font-medium text-sm transition">
-            Вернуться к каталогу
-          </button>
-        </div>
-      </section>
-    </main>
-
-    <footer class="mt-8 text-center text-xs text-slate-600 border-t border-slate-900 pt-4">
-      Learnix · Учебный проект для практики русского языка
     </footer>
+
+    <div v-if="toastMessage" class="toast" role="status">{{ toastMessage }}</div>
+
+    <div v-if="showResetModal" class="modal-backdrop" @click.self="showResetModal = false">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+        <h2 id="reset-title">Сбросить весь прогресс?</h2>
+        <p>
+          Удалятся решённые задания, серии, опыт и избранные темы.
+          Это действие нельзя отменить.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="button-quiet" @click="showResetModal = false">Отмена</button>
+          <button type="button" class="button-danger" @click="resetProgress">Сбросить данные</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     const { createApp } = Vue;
 
-    function readStoredInt(key, fallback = 0) {
+    const STORAGE_KEY = 'learnix_v3';
+
+    const trainersData = [
+      {
+        id: 'accents',
+        category: 'norms',
+        categoryTitle: 'Произношение',
+        title: 'Ударения в словах',
+        description: 'Тренируйтесь находить ударный слог в распространённых словах.',
+        icon: '◌',
+        color: '',
+        preview: 'каталОг',
+        type: 'accent',
+        questions: [
+          {
+            rawWord: 'добрала',
+            correctIndex: 6,
+            correctAnswer: 'а',
+            rule: 'Правильно: добралА. В форме прошедшего времени женского рода ударение часто падает на окончание: взялА, жилА, создалА.'
+          },
+          {
+            rawWord: 'торты',
+            correctIndex: 1,
+            correctAnswer: 'о',
+            rule: 'Правильно: тОрты. Ударение сохраняется на первом слоге: тОрты, тОртов, тОртами.'
+          },
+          {
+            rawWord: 'звонит',
+            correctIndex: 4,
+            correctAnswer: 'и',
+            rule: 'Правильно: звонИт. Ударение падает на окончание: звонИшь, звонИт, звонИм, звонЯт.'
+          },
+          {
+            rawWord: 'жалюзи',
+            correctIndex: 5,
+            correctAnswer: 'и',
+            rule: 'Правильно: жалюзИ. Ударение падает на последний слог.'
+          },
+          {
+            rawWord: 'каталог',
+            correctIndex: 5,
+            correctAnswer: 'о',
+            rule: 'Правильно: каталОг. Сравните: диалОг, монолОг; слово анАлог — исключение.'
+          },
+          {
+            rawWord: 'кралась',
+            correctIndex: 2,
+            correctAnswer: 'а',
+            rule: 'Правильно: крАлась. Ударение падает на корень.'
+          },
+          {
+            rawWord: 'банты',
+            correctIndex: 1,
+            correctAnswer: 'а',
+            rule: 'Правильно: бАнты. Ударение падает на первый слог.'
+          },
+          {
+            rawWord: 'донизу',
+            correctIndex: 1,
+            correctAnswer: 'о',
+            rule: 'Правильно: дОнизу. Ударение падает на первый слог.'
+          },
+          {
+            rawWord: 'красивее',
+            correctIndex: 4,
+            correctAnswer: 'и',
+            rule: 'Правильно: красИвее. В сравнительной степени прилагательного ударение остаётся на основе.'
+          },
+          {
+            rawWord: 'средства',
+            correctIndex: 2,
+            correctAnswer: 'е',
+            rule: 'Правильно: срЕдства. Ударение падает на первый слог.'
+          }
+        ]
+      },
+
+      {
+        id: 'roots',
+        category: 'spelling',
+        categoryTitle: 'Орфография',
+        title: 'Гласные в корнях',
+        description: 'Чередующиеся, проверяемые и словарные гласные в корнях слов.',
+        icon: '⌁',
+        color: 'blue',
+        preview: 'прик_сновение',
+        type: 'gap',
+        questions: [
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'прик',
+            suffix: 'сновение',
+            correctAnswer: 'о',
+            options: ['о', 'а'],
+            rule: 'В корне КОС—КАС перед суффиксом -А- пишется А: касаться. Если суффикса -А- нет, пишется О: прикосновение.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву в словарное слово.',
+            prefix: 'в',
+            suffix: 'негрет',
+            correctAnswer: 'и',
+            options: ['и', 'е'],
+            rule: 'Правильно: винегрет. Написание этого слова нужно запомнить.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'заг',
+            suffix: 'релый',
+            correctAnswer: 'о',
+            options: ['о', 'а'],
+            rule: 'В корне ГОР—ГАР без ударения пишется О: загорелый, подгореть. Под ударением обычно пишется А: загар.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'выск',
+            suffix: 'чить',
+            correctAnswer: 'о',
+            options: ['о', 'а'],
+            rule: 'В корне перед Ч обычно пишется О: выскочить. Перед К обычно пишется А: скакать. Есть слова-исключения.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'пром',
+            suffix: 'кашка',
+            correctAnswer: 'о',
+            options: ['о', 'а'],
+            rule: 'Корень МОК- связан со значением «пропускать жидкость, становиться влажным»: промокашка. Корень МАК- означает «погружать в жидкость»: макать.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву в словарное слово.',
+            prefix: 'пал',
+            suffix: 'садник',
+            correctAnswer: 'и',
+            options: ['и', 'е'],
+            rule: 'Правильно: палисадник. Написание слова нужно запомнить.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'з',
+            suffix: 'ря',
+            correctAnswer: 'а',
+            options: ['а', 'о'],
+            rule: 'В корне ЗАР—ЗОР без ударения пишется А: заря, озарить. Под ударением пишется то, что слышится: зОрька, зАрево.'
+          }
+        ]
+      },
+
+      {
+        id: 'prefixes',
+        category: 'spelling',
+        categoryTitle: 'Орфография',
+        title: 'Приставки ПРЕ- и ПРИ-',
+        description: 'Различайте приставки по значению и запоминайте слова с трудным написанием.',
+        icon: '↗',
+        color: 'yellow',
+        preview: 'пр_морский',
+        type: 'gap',
+        questions: [
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'пр',
+            suffix: 'морский',
+            correctAnswer: 'и',
+            options: ['и', 'е'],
+            rule: 'ПРИ- пишется в значении близости: приморский — находящийся около моря.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'пр',
+            suffix: 'милый',
+            correctAnswer: 'е',
+            options: ['е', 'и'],
+            rule: 'ПРЕ- может иметь значение высокой степени качества, близкое по смыслу к слову «очень»: премилый — очень милый.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'пр',
+            suffix: 'открыть',
+            correctAnswer: 'и',
+            options: ['и', 'е'],
+            rule: 'ПРИ- обозначает неполноту действия: приоткрыть — открыть не полностью.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'пр',
+            suffix: 'одолеть',
+            correctAnswer: 'е',
+            options: ['е', 'и'],
+            rule: 'Правильно: преодолеть. В этом слове значение приставки близко к значению ПЕРЕ-: преодолеть препятствие.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву в словарное слово.',
+            prefix: 'пр',
+            suffix: 'зидент',
+            correctAnswer: 'е',
+            options: ['е', 'и'],
+            rule: 'Правильно: президент. Написание заимствованного слова нужно запомнить.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'пр',
+            suffix: 'готовить',
+            correctAnswer: 'и',
+            options: ['и', 'е'],
+            rule: 'Правильно: приготовить. В этом слове пишется приставка ПРИ-.'
+          }
+        ]
+      },
+
+      {
+        id: 'suffixes',
+        category: 'spelling',
+        categoryTitle: 'Орфография',
+        title: 'Правописание суффиксов',
+        description: 'Суффиксы глаголов и прилагательных, а также написание слов-исключений.',
+        icon: '✳',
+        color: 'purple',
+        preview: 'исследов_ть',
+        type: 'gap',
+        questions: [
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'исследов',
+            suffix: 'ть',
+            correctAnswer: 'а',
+            options: ['а', 'ыва'],
+            rule: 'Сравните форму 1-го лица: я исследую. Если в этой форме глагол оканчивается на -ую или -юю, в неопределённой форме обычно пишется -ова- или -ева-: исследовать.'
+          },
+          {
+            instruction: 'Выбери верный вариант.',
+            prefix: 'застёг',
+            suffix: 'ть',
+            correctAnswer: 'ива',
+            options: ['ива', 'ева'],
+            rule: 'Сравните форму 1-го лица: я застёгиваю. Суффикс -ива- сохраняется, поэтому правильно: застёгивать.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'затм',
+            suffix: 'вать',
+            correctAnswer: 'е',
+            options: ['е', 'и'],
+            rule: 'Правильно: затмевать. Перед суффиксом -ВА- сохраняется гласная, которая пишется в форме без этого суффикса: затмить — затмевать.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'фасол',
+            suffix: 'вый',
+            correctAnswer: 'е',
+            options: ['е', 'и'],
+            rule: 'Правильно: фасолевый. В безударном суффиксе прилагательного пишется Е: фасолевый, сиреневый.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'ноч',
+            suffix: 'вать',
+            correctAnswer: 'е',
+            options: ['е', 'ива'],
+            rule: 'Правильно: ночевать. Сравните форму 1-го лица: я ночую.'
+          }
+        ]
+      },
+
+      {
+        id: 'n-nn',
+        category: 'spelling',
+        categoryTitle: 'Орфография',
+        title: 'Одна и две буквы Н',
+        description: 'Учитесь различать прилагательные и причастия с Н и НН.',
+        icon: 'Ⅱ',
+        color: 'red',
+        preview: 'масл_ый',
+        type: 'gap',
+        questions: [
+          {
+            instruction: 'Вставь нужное сочетание букв.',
+            prefix: 'масл',
+            suffix: 'ый крем',
+            correctAnswer: 'ян',
+            options: ['ян', 'янн'],
+            rule: 'В прилагательных с суффиксами -АН-, -ЯН-, -ИН- обычно пишется одна Н: масляный, кожаный, соколиный. Исключения: стеклянный, оловянный, деревянный.'
+          },
+          {
+            instruction: 'Вставь нужное сочетание букв.',
+            prefix: 'тушё',
+            suffix: 'ое в печи мясо',
+            correctAnswer: 'нн',
+            options: ['нн', 'н'],
+            rule: 'В полном причастии при наличии зависимого слова пишется НН: тушённое в печи мясо.'
+          },
+          {
+            instruction: 'Вставь нужное сочетание букв.',
+            prefix: 'дерев',
+            suffix: 'ый дом',
+            correctAnswer: 'янн',
+            options: ['янн', 'ян'],
+            rule: 'Слова стеклянный, оловянный и деревянный пишутся с НН.'
+          },
+          {
+            instruction: 'Вставь нужную букву.',
+            prefix: 'ране',
+            suffix: 'ый боец',
+            correctAnswer: 'н',
+            options: ['н', 'нн'],
+            rule: 'В слове раненый без зависимых слов и приставки пишется одна Н. Сравните: раненный в руку боец.'
+          },
+          {
+            instruction: 'Вставь нужное сочетание букв.',
+            prefix: 'купл',
+            suffix: 'ый товар',
+            correctAnswer: 'енн',
+            options: ['енн', 'ен'],
+            rule: 'Правильно: купленный товар. В этом слове пишутся две Н.'
+          }
+        ]
+      },
+
+      {
+        id: 'yo',
+        category: 'spelling',
+        categoryTitle: 'Орфография',
+        title: 'Ё и О после шипящих',
+        description: 'Проверьте написание гласных после шипящих в корнях слов.',
+        icon: 'Ё',
+        color: 'yellow',
+        preview: 'ч_рствый',
+        type: 'gap',
+        questions: [
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'ч',
+            suffix: 'рствый',
+            correctAnswer: 'ё',
+            options: ['ё', 'о'],
+            rule: 'Правильно: чёрствый. Написание Ё можно проверить однокоренным словом черстветь.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'ш',
+            suffix: 'пот',
+            correctAnswer: 'ё',
+            options: ['ё', 'о'],
+            rule: 'Правильно: шёпот. Написание Ё можно проверить однокоренным словом шептать.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву в словарное слово.',
+            prefix: 'ш',
+            suffix: 'фёр',
+            correctAnswer: 'о',
+            options: ['ё', 'о'],
+            rule: 'Правильно: шофёр. Это слово нужно запомнить.'
+          },
+          {
+            instruction: 'Вставь пропущенную букву.',
+            prefix: 'ж',
+            suffix: 'лтый',
+            correctAnswer: 'ё',
+            options: ['ё', 'о'],
+            rule: 'Правильно: жёлтый. В однокоренных словах встречается Е: желтеть.'
+          }
+        ]
+      },
+
+      {
+        id: 'paronyms',
+        category: 'lexis',
+        categoryTitle: 'Лексика',
+        title: 'Точные значения слов',
+        description: 'Выбирайте слово с подходящим значением и правильной сочетаемостью.',
+        icon: '↔',
+        color: 'purple',
+        preview: 'годовалый / годовой',
+        type: 'choice',
+        questions: [
+          {
+            instruction: 'Выбери слово, подходящее по смыслу.',
+            before: 'В парке гуляла женщина с',
+            after: 'ребёнком.',
+            correctAnswer: 'годовалым',
+            options: ['годовалым', 'годовым'],
+            rule: 'Годовалый — в возрасте одного года: годовалый ребёнок. Годовой — относящийся к году или рассчитанный на год: годовой отчёт.'
+          },
+          {
+            instruction: 'Выбери подходящий глагол.',
+            before: 'Перед выходом на улицу необходимо',
+            after: 'пальто.',
+            correctAnswer: 'надеть',
+            options: ['надеть', 'одеть'],
+            rule: 'Надеть можно одежду: надеть пальто. Одеть — кого-либо: одеть ребёнка.'
+          },
+          {
+            instruction: 'Выбери подходящее слово.',
+            before: 'Мастер проявил себя как',
+            after: 'реставратор.',
+            correctAnswer: 'искусный',
+            options: ['искусный', 'искусственный'],
+            rule: 'Искусный — умелый, обладающий мастерством. Искусственный — созданный человеком, ненатуральный.'
+          },
+          {
+            instruction: 'Выбери слово, подходящее по смыслу.',
+            before: 'В вопросах точных наук он оказался',
+            after: ', путающим базовые понятия.',
+            correctAnswer: 'невеждой',
+            options: ['невеждой', 'невежей'],
+            rule: 'Невежда — малообразованный, несведущий человек. Невежа — грубый, невоспитанный человек.'
+          },
+          {
+            instruction: 'Выбери подходящее прилагательное.',
+            before: 'Разведчики проникли во',
+            after: 'лагерь.',
+            correctAnswer: 'вражеский',
+            options: ['вражеский', 'враждебный'],
+            rule: 'Вражеский — принадлежащий противнику: вражеский лагерь. Враждебный — полный неприязни: враждебный взгляд.'
+          },
+          {
+            instruction: 'Выбери подходящее существительное.',
+            before: 'Своевременная',
+            after: 'проезда обязательна.',
+            correctAnswer: 'оплата',
+            options: ['оплата', 'выплата'],
+            rule: 'Оплата — внесение денег за товар или услугу: оплата проезда. Выплата — выдача денег: выплата пособия.'
+          }
+        ]
+      },
+
+      {
+        id: 'punctuation',
+        category: 'punctuation',
+        categoryTitle: 'Пунктуация',
+        title: 'Запятые в предложениях',
+        description: 'Практикуйтесь распознавать вводные слова, обращения и основы сложных предложений.',
+        icon: ',',
+        color: 'blue',
+        preview: 'Конечно, я помогу.',
+        type: 'choice',
+        questions: [
+          {
+            instruction: 'Выбери вариант с правильной пунктуацией.',
+            prompt: 'Как правильно оформить предложение?',
+            correctAnswer: 'Конечно, я помогу.',
+            options: ['Конечно я помогу.', 'Конечно, я помогу.'],
+            rule: 'Слово «конечно» в значении вводного слова выделяется запятой.'
+          },
+          {
+            instruction: 'Выбери вариант с правильной пунктуацией.',
+            prompt: 'Как правильно оформить предложение?',
+            correctAnswer: 'Ребята, начнём урок.',
+            options: ['Ребята начнём урок.', 'Ребята, начнём урок.'],
+            rule: 'Обращение «ребята» отделяется запятой.'
+          },
+          {
+            instruction: 'Выбери вариант с правильной пунктуацией.',
+            prompt: 'Как правильно оформить предложение?',
+            correctAnswer: 'Солнце село, и стало прохладно.',
+            options: ['Солнце село и стало прохладно.', 'Солнце село, и стало прохладно.'],
+            rule: 'В сложносочинённом предложении между его частями обычно ставится запятая.'
+          },
+          {
+            instruction: 'Выбери вариант с правильной пунктуацией.',
+            prompt: 'Как правильно оформить предложение?',
+            correctAnswer: 'Когда закончился дождь, мы вышли на улицу.',
+            options: ['Когда закончился дождь мы вышли на улицу.', 'Когда закончился дождь, мы вышли на улицу.'],
+            rule: 'Придаточная часть сложного предложения отделяется от главной запятой.'
+          },
+          {
+            instruction: 'Выбери вариант с правильной пунктуацией.',
+            prompt: 'Как правильно оформить предложение?',
+            correctAnswer: 'К счастью, поезд не опоздал.',
+            options: ['К счастью поезд не опоздал.', 'К счастью, поезд не опоздал.'],
+            rule: 'Сочетание «к счастью» здесь является вводным и отделяется запятой.'
+          }
+        ]
+      },
+
+      {
+        id: 'word-choice',
+        category: 'lexis',
+        categoryTitle: 'Лексика',
+        title: 'Слова в контексте',
+        description: 'Выбирайте подходящее слово и избегайте распространённых речевых ошибок.',
+        icon: '✎',
+        color: 'red',
+        preview: 'оплатить проезд',
+        type: 'choice',
+        questions: [
+          {
+            instruction: 'Выбери грамматически правильный вариант.',
+            before: 'Нужно',
+            after: 'за билет.',
+            correctAnswer: 'заплатить',
+            options: ['заплатить', 'оплатить'],
+            rule: 'Правильно: заплатить за билет. Глагол «оплатить» употребляется без предлога: оплатить билет.'
+          },
+          {
+            instruction: 'Выбери слово, подходящее по смыслу.',
+            before: 'Весь класс участвовал в',
+            after: 'проекта.',
+            correctAnswer: 'обсуждении',
+            options: ['обсуждении', 'обсуждению'],
+            rule: 'Правильно: участвовал в обсуждении. После предлога «в» в этом значении употребляется предложный падеж.'
+          },
+          {
+            instruction: 'Выбери подходящее слово.',
+            before: 'Докладчик представил',
+            after: 'аргументы.',
+            correctAnswer: 'убедительные',
+            options: ['убедительные', 'убедительныеся'],
+            rule: 'Правильно: убедительные аргументы. Это прилагательное образовано от слова «убедить».'
+          },
+          {
+            instruction: 'Выбери грамматически правильный вариант.',
+            before: 'По',
+            after: 'из школы он зашёл в магазин.',
+            correctAnswer: 'возвращении',
+            options: ['возвращении', 'возвращению'],
+            rule: 'В значении «после возвращения» используется конструкция «по возвращении»: предлог ПО требует предложного падежа.'
+          }
+        ]
+      }
+    ];
+
+    function safeLoad() {
       try {
-        const value = Number.parseInt(localStorage.getItem(key) ?? '', 10);
-        return Number.isFinite(value) && value >= 0 ? value : fallback;
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
       } catch {
-        return fallback;
+        return null;
       }
     }
 
-    function readStoredBoolean(key, fallback) {
+    function safeSave(value) {
       try {
-        const value = localStorage.getItem(key);
-        return value === null ? fallback : value === 'true';
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
       } catch {
-        return fallback;
+        // Приложение продолжает работать без сохранения данных.
       }
     }
 
-    function writeStoredValue(key, value) {
-      try {
-        localStorage.setItem(key, String(value));
-      } catch {
-        // Приложение продолжает работать, даже если хранилище недоступно.
-      }
-    }
-
-    function shuffle(items) {
+    function shuffleArray(items) {
       const result = [...items];
 
-      for (let index = result.length - 1; index > 0; index--) {
+      for (let index = result.length - 1; index > 0; index -= 1) {
         const randomIndex = Math.floor(Math.random() * (index + 1));
         [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
       }
@@ -406,431 +2691,151 @@
       return result;
     }
 
+    function getLocalDateKey() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function makeDefaultStats() {
+      return {
+        totalSolved: 0,
+        correctAnswers: 0,
+        xp: 0,
+        streak: 0,
+        bestStreak: 0,
+        roundsCompleted: 0,
+        lastAnswerDate: '',
+        dailyDate: getLocalDateKey(),
+        dailySolved: 0,
+        dailyGoal: 10,
+        favorites: [],
+        trainerResults: {},
+        settings: {
+          sound: true,
+          shuffle: true
+        }
+      };
+    }
+
     createApp({
       data() {
+        const saved = safeLoad();
+        const defaults = makeDefaultStats();
+        const storedStats = saved && typeof saved.stats === 'object' ? saved.stats : {};
+
+        const stats = {
+          ...defaults,
+          ...storedStats,
+          settings: {
+            ...defaults.settings,
+            ...(storedStats.settings || {})
+          },
+          trainerResults: storedStats.trainerResults || {},
+          favorites: Array.isArray(storedStats.favorites) ? storedStats.favorites : []
+        };
+
+        if (stats.dailyDate !== getLocalDateKey()) {
+          stats.dailyDate = getLocalDateKey();
+          stats.dailySolved = 0;
+        }
+
         return {
           currentView: 'catalog',
           activeCategory: 'all',
+          searchQuery: '',
+          sortMode: 'default',
+          showFavoritesOnly: false,
+
+          trainers: trainersData,
+          stats,
+
           activeTrainerId: null,
+          activeList: [],
           currentIndex: 0,
+          roundMode: 'practice',
+          timerSeconds: 90,
+          timerId: null,
+
           answered: false,
           answerStatus: null,
           selectedOption: null,
-
-          streak: readStoredInt('learnix_streak'),
-          totalSolved: readStoredInt('learnix_solved'),
-          soundEnabled: readStoredBoolean('learnix_sound', true),
-
+          roundCorrect: 0,
           mistakesList: [],
-          correctAnswersCount: 0,
-          activeList: [],
+          lastRoundXp: 0,
+
+          dailyGoal: Number(stats.dailyGoal) || 10,
+          settings: {
+            sound: stats.settings.sound !== false,
+            shuffle: stats.settings.shuffle !== false
+          },
+
+          toastMessage: '',
+          toastTimeout: null,
+          showResetModal: false,
+          exitAfterConfirmation: false,
 
           categories: [
             { id: 'all', title: 'Все темы' },
-            { id: 'ortho', title: 'Орфография' },
+            { id: 'spelling', title: 'Орфография' },
             { id: 'norms', title: 'Произношение' },
+            { id: 'punctuation', title: 'Пунктуация' },
             { id: 'lexis', title: 'Лексика' }
-          ],
-
-          trainers: [
-            {
-              id: 'accents',
-              category: 'norms',
-              tag: 'Произношение',
-              title: 'Ударения в словах',
-              description: 'Тренируйтесь находить ударную гласную в распространённых словах.',
-              preview: 'каталОг',
-              type: 'accents',
-              questions: [
-                {
-                  rawWord: 'добрала',
-                  correctIndex: 6,
-                  rule: 'В форме прошедшего времени женского рода ударение часто падает на окончание: добралА, взялА, жилА.'
-                },
-                {
-                  rawWord: 'торты',
-                  correctIndex: 1,
-                  rule: 'Правильно: тОрты. Ударение сохраняется на основе: тОрты, тОртов, тОртами.'
-                },
-                {
-                  rawWord: 'звонит',
-                  correctIndex: 4,
-                  rule: 'Правильно: звонИт. В формах настоящего времени ударение сохраняется на окончании: звонИшь, звонИт, звонИм, звонИте, звонЯт.'
-                },
-                {
-                  rawWord: 'жалюзи',
-                  correctIndex: 5,
-                  rule: 'Правильно: жалюзИ. Ударение падает на последний слог.'
-                },
-                {
-                  rawWord: 'каталог',
-                  correctIndex: 5,
-                  rule: 'Правильно: каталОг. Сравните: диалОг, монолОг; анАлог — исключение.'
-                },
-                {
-                  rawWord: 'кралась',
-                  correctIndex: 2,
-                  rule: 'Правильно: крАлась. В этой форме ударение падает на корень.'
-                },
-                {
-                  rawWord: 'банты',
-                  correctIndex: 1,
-                  rule: 'Правильно: бАнты. Ударение сохраняется на первом слоге.'
-                },
-                {
-                  rawWord: 'донизу',
-                  correctIndex: 1,
-                  rule: 'Правильно: дОнизу. В этом наречии ударение падает на приставку.'
-                }
-              ]
-            },
-
-            {
-              id: 'roots',
-              category: 'ortho',
-              tag: 'Орфография',
-              title: 'Гласные в корнях',
-              description: 'Чередующиеся, проверяемые и словарные гласные в корнях слов.',
-              preview: 'прик_сновение',
-              type: 'letter_gap',
-              questions: [
-                {
-                  instruction: 'Чередование в корне КОС / КАС',
-                  prefix: 'прик',
-                  suffix: 'сновение',
-                  correctLetter: 'о',
-                  options: ['о', 'а'],
-                  rule: 'В корне КОС—КАС перед суффиксом -А- пишется А: касаться. Если суффикса -А- нет, пишется О: прикосновение.'
-                },
-                {
-                  instruction: 'Словарное слово',
-                  prefix: 'в',
-                  suffix: 'негрет',
-                  correctLetter: 'и',
-                  options: ['и', 'е'],
-                  rule: 'Правильно: винегрет. Написание этого слова нужно запомнить.'
-                },
-                {
-                  instruction: 'Чередование в корне ГОР / ГАР',
-                  prefix: 'заг',
-                  suffix: 'релый',
-                  correctLetter: 'о',
-                  options: ['о', 'а'],
-                  rule: 'В корне гар-/гор- без ударения пишется О: загорелый, подгореть. Под ударением обычно пишется А: загар.'
-                },
-                {
-                  instruction: 'Чередование в корне СКАК / СКОЧ',
-                  prefix: 'выск',
-                  suffix: 'чить',
-                  correctLetter: 'о',
-                  options: ['о', 'а'],
-                  rule: 'В корне перед Ч обычно пишется О: выскочить. Перед К обычно пишется А: скакать. Есть слова-исключения.'
-                },
-                {
-                  instruction: 'Чередование в корне МАК / МОК',
-                  prefix: 'пром',
-                  suffix: 'кашка',
-                  correctLetter: 'о',
-                  options: ['о', 'а'],
-                  rule: 'Корень МОК- связан со значением «пропускать жидкость, становиться влажным»: промокашка. Корень МАК- означает «погружать в жидкость»: макать.'
-                },
-                {
-                  instruction: 'Словарное слово',
-                  prefix: 'пал',
-                  suffix: 'садник',
-                  correctLetter: 'и',
-                  options: ['и', 'е'],
-                  rule: 'Правильно: палисадник. Написание слова нужно запомнить.'
-                }
-              ]
-            },
-
-            {
-              id: 'prefixes',
-              category: 'ortho',
-              tag: 'Орфография',
-              title: 'Приставки ПРЕ- и ПРИ-',
-              description: 'Различайте приставки по значению и запоминайте слова с трудным написанием.',
-              preview: 'пр_морский',
-              type: 'letter_gap',
-              questions: [
-                {
-                  instruction: 'Значение близости',
-                  prefix: 'пр',
-                  suffix: 'морский',
-                  correctLetter: 'и',
-                  options: ['и', 'е'],
-                  rule: 'ПРИ- пишется в значении близости: приморский — находящийся около моря.'
-                },
-                {
-                  instruction: 'Значение высокой степени качества',
-                  prefix: 'пр',
-                  suffix: 'милый',
-                  correctLetter: 'е',
-                  options: ['е', 'и'],
-                  rule: 'ПРЕ- может иметь значение высокой степени качества, близкое по смыслу к слову «очень»: премилый — очень милый.'
-                },
-                {
-                  instruction: 'Значение неполноты действия',
-                  prefix: 'пр',
-                  suffix: 'открыть',
-                  correctLetter: 'и',
-                  options: ['и', 'е'],
-                  rule: 'ПРИ- обозначает неполноту действия: приоткрыть — открыть не полностью.'
-                },
-                {
-                  instruction: 'Значение, близкое к приставке ПЕРЕ-',
-                  prefix: 'пр',
-                  suffix: 'одолеть',
-                  correctLetter: 'е',
-                  options: ['е', 'и'],
-                  rule: 'В слове преодолеть пишется ПРЕ-. В этом слове значение приставки близко к значению ПЕРЕ-: преодолеть препятствие.'
-                },
-                {
-                  instruction: 'Словарное слово',
-                  prefix: 'пр',
-                  suffix: 'зидент',
-                  correctLetter: 'е',
-                  options: ['е', 'и'],
-                  rule: 'Правильно: президент. Написание заимствованного слова нужно запомнить.'
-                },
-                {
-                  instruction: 'Значение приближения к результату',
-                  prefix: 'пр',
-                  suffix: 'готовить',
-                  correctLetter: 'и',
-                  options: ['и', 'е'],
-                  rule: 'Правильно: приготовить. В этом слове пишется приставка ПРИ-.'
-                }
-              ]
-            },
-
-            {
-              id: 'suffixes',
-              category: 'ortho',
-              tag: 'Орфография',
-              title: 'Правописание суффиксов',
-              description: 'Суффиксы глаголов и прилагательных, а также написание слов-исключений.',
-              preview: 'исследов_ть',
-              type: 'letter_gap',
-              questions: [
-                {
-                  instruction: 'Суффикс глагола в неопределённой форме',
-                  prefix: 'исследов',
-                  suffix: 'ть',
-                  correctLetter: 'а',
-                  options: ['а', 'ыва'],
-                  rule: 'Сравните форму 1-го лица: я исследую. Если в этой форме глагол оканчивается на -ую или -юю, в неопределённой форме обычно пишется -ова- или -ева-: исследовать.'
-                },
-                {
-                  instruction: 'Суффикс сохраняется в форме 1-го лица',
-                  prefix: 'застёг',
-                  suffix: 'ть',
-                  correctLetter: 'ива',
-                  options: ['ива', 'ева'],
-                  rule: 'Сравните форму 1-го лица: я застёгиваю. Суффикс -ива- сохраняется, поэтому правильно: застёгивать.'
-                },
-                {
-                  instruction: 'Написание слова перед суффиксом -ВА-',
-                  prefix: 'затм',
-                  suffix: 'вать',
-                  correctLetter: 'е',
-                  options: ['е', 'и'],
-                  rule: 'Правильно: затмевать. Перед суффиксом -ВА- сохраняется гласная, которая пишется в форме без этого суффикса: затмить — затмевать.'
-                },
-                {
-                  instruction: 'Безударный суффикс прилагательного',
-                  prefix: 'фасол',
-                  suffix: 'вый',
-                  correctLetter: 'е',
-                  options: ['е', 'и'],
-                  rule: 'Правильно: фасолевый. В безударном суффиксе прилагательного пишется Е: фасолевый, сиреневый.'
-                },
-                {
-                  instruction: 'Суффикс глагола',
-                  prefix: 'ноч',
-                  suffix: 'вать',
-                  correctLetter: 'е',
-                  options: ['е', 'ива'],
-                  rule: 'Правильно: ночевать. Сравните форму 1-го лица: я ночую.'
-                }
-              ]
-            },
-
-            {
-              id: 'n-nn',
-              category: 'ortho',
-              tag: 'Орфография',
-              title: 'Одна и две буквы Н',
-              description: 'Тренируйтесь различать прилагательные и причастия с Н и НН.',
-              preview: 'масл_ый',
-              type: 'letter_gap',
-              questions: [
-                {
-                  instruction: 'Прилагательное с суффиксом -ЯН-',
-                  prefix: 'масл',
-                  suffix: 'ый крем',
-                  correctLetter: 'ян',
-                  options: ['ян', 'янн'],
-                  rule: 'В прилагательных с суффиксами -АН-, -ЯН-, -ИН- обычно пишется одна Н: масляный, кожаный, соколиный. Исключения: стеклянный, оловянный, деревянный.'
-                },
-                {
-                  instruction: 'Причастие с зависимым словом',
-                  prefix: 'тушё',
-                  suffix: 'ое в печи мясо',
-                  correctLetter: 'нн',
-                  options: ['нн', 'н'],
-                  rule: 'В полном причастии при наличии зависимого слова пишется НН: тушённое в печи мясо.'
-                },
-                {
-                  instruction: 'Слово-исключение',
-                  prefix: 'дерев',
-                  suffix: 'ый дом',
-                  correctLetter: 'янн',
-                  options: ['янн', 'ян'],
-                  rule: 'Слова стеклянный, оловянный и деревянный пишутся с НН.'
-                },
-                {
-                  instruction: 'Одиночное отглагольное прилагательное',
-                  prefix: 'ране',
-                  suffix: 'ый боец',
-                  correctLetter: 'н',
-                  options: ['н', 'нн'],
-                  rule: 'В слове раненый без зависимых слов и приставки пишется одна Н. Сравните: раненный в руку боец.'
-                },
-                {
-                  instruction: 'Слово, образованное от глагола совершенного вида',
-                  prefix: 'купл',
-                  suffix: 'ый товар',
-                  correctLetter: 'енн',
-                  options: ['енн', 'ен'],
-                  rule: 'Правильно: купленный товар. В слове пишутся две Н.'
-                }
-              ]
-            },
-
-            {
-              id: 'yo-after-sibilants',
-              category: 'ortho',
-              tag: 'Орфография',
-              title: 'Ё и О после шипящих',
-              description: 'Проверьте написание гласных после шипящих в корнях слов.',
-              preview: 'ч_рствый',
-              type: 'letter_gap',
-              questions: [
-                {
-                  instruction: 'Проверяемая гласная в корне',
-                  prefix: 'ч',
-                  suffix: 'рствый',
-                  correctLetter: 'ё',
-                  options: ['ё', 'о'],
-                  rule: 'В слове чёрствый пишется Ё. Проверочное однокоренное слово — черстветь.'
-                },
-                {
-                  instruction: 'Проверяемая гласная в корне',
-                  prefix: 'ш',
-                  suffix: 'пот',
-                  correctLetter: 'ё',
-                  options: ['ё', 'о'],
-                  rule: 'Правильно: шёпот. Написание Ё можно проверить однокоренным словом шептать.'
-                },
-                {
-                  instruction: 'Словарное слово',
-                  prefix: 'ш',
-                  suffix: 'фёр',
-                  correctLetter: 'о',
-                  options: ['ё', 'о'],
-                  rule: 'Правильно: шофёр. Это слово нужно запомнить.'
-                }
-              ]
-            },
-
-            {
-              id: 'paronyms',
-              category: 'lexis',
-              tag: 'Лексика',
-              title: 'Точные значения слов',
-              description: 'Выбирайте слово с подходящим значением и правильной сочетаемостью.',
-              preview: 'годовалый / годовой',
-              type: 'paronyms',
-              questions: [
-                {
-                  sentenceBefore: 'В парке гуляла женщина с',
-                  sentenceAfter: 'ребёнком.',
-                  options: ['годовалым', 'годовым'],
-                  correctWord: 'годовалым',
-                  rule: 'Годовалый — в возрасте одного года: годовалый ребёнок. Годовой — относящийся к году или рассчитанный на год: годовой отчёт.'
-                },
-                {
-                  sentenceBefore: 'Перед выходом на улицу в мороз необходимо',
-                  sentenceAfter: 'тёплое пальто.',
-                  options: ['надеть', 'одеть'],
-                  correctWord: 'надеть',
-                  rule: 'Надеть можно одежду: надеть пальто. Одеть — кого-либо: одеть ребёнка.'
-                },
-                {
-                  sentenceBefore: 'Пожилой мастер проявил себя как',
-                  sentenceAfter: 'реставратор.',
-                  options: ['искусный', 'искусственный'],
-                  correctWord: 'искусный',
-                  rule: 'Искусный — умелый, обладающий мастерством. Искусственный — созданный человеком, ненатуральный.'
-                },
-                {
-                  sentenceBefore: 'В вопросах точных наук он оказался',
-                  sentenceAfter: ', путающим базовые понятия.',
-                  options: ['невеждой', 'невежей'],
-                  correctWord: 'невеждой',
-                  rule: 'Невежда — малообразованный, несведущий человек. Невежа — грубый, невоспитанный человек.'
-                },
-                {
-                  sentenceBefore: 'Разведчики проникли во',
-                  sentenceAfter: 'лагерь.',
-                  options: ['вражеский', 'враждебный'],
-                  correctWord: 'вражеский',
-                  rule: 'Вражеский — принадлежащий противнику: вражеский лагерь. Враждебный — полный неприязни: враждебный взгляд.'
-                },
-                {
-                  sentenceBefore: 'Своевременная',
-                  sentenceAfter: 'проезда обязательна.',
-                  options: ['оплата', 'выплата'],
-                  correctWord: 'оплата',
-                  rule: 'Оплата — внесение денег за товар или услугу: оплата проезда. Выплата — выдача денег: выплата пособия.'
-                }
-              ]
-            }
           ]
         };
       },
 
       computed: {
         filteredTrainers() {
-          if (this.activeCategory === 'all') {
-            return this.trainers;
+          let result = [...this.trainers];
+
+          if (this.activeCategory !== 'all') {
+            result = result.filter(item => item.category === this.activeCategory);
           }
 
-          return this.trainers.filter(trainer => trainer.category === this.activeCategory);
+          if (this.showFavoritesOnly) {
+            result = result.filter(item => this.isFavorite(item.id));
+          }
+
+          const query = this.searchQuery.toLocaleLowerCase('ru').trim();
+
+          if (query) {
+            result = result.filter(item => {
+              const searchable = `${item.title} ${item.description} ${item.categoryTitle}`.toLocaleLowerCase('ru');
+              return searchable.includes(query);
+            });
+          }
+
+          if (this.sortMode === 'name') {
+            result.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+          } else if (this.sortMode === 'progress') {
+            result.sort((a, b) => this.trainerProgress(b.id) - this.trainerProgress(a.id));
+          }
+
+          return result;
         },
 
         currentTrainer() {
-          return this.trainers.find(trainer => trainer.id === this.activeTrainerId) || this.trainers[0];
+          return this.trainers.find(item => item.id === this.activeTrainerId) || this.trainers[0];
         },
 
         currentQuestion() {
           const question = this.activeList[this.currentIndex];
 
-          if (!question) {
-            return null;
-          }
+          if (!question) return null;
 
-          if (this.currentTrainer.type === 'accents') {
+          if (this.currentTrainer.type === 'accent') {
             const vowels = new Set(['а', 'о', 'у', 'ы', 'э', 'е', 'ё', 'и', 'ю', 'я']);
 
             return {
               ...question,
+              correctAnswer: question.rawWord[question.correctIndex],
               letters: [...question.rawWord].map((char, index) => ({
                 char,
                 index,
-                isVowel: vowels.has(char.toLowerCase())
+                isVowel: vowels.has(char.toLocaleLowerCase('ru'))
               }))
             };
           }
@@ -838,225 +2843,443 @@
           return question;
         },
 
-        roundAccuracy() {
-          if (this.activeList.length === 0) {
-            return 0;
-          }
+        isLastQuestion() {
+          return this.currentIndex >= this.activeList.length - 1;
+        },
 
-          return Math.round((this.correctAnswersCount / this.activeList.length) * 100);
+        roundAccuracy() {
+          if (!this.activeList.length) return 0;
+          return Math.round((this.roundCorrect / this.activeList.length) * 100);
+        },
+
+        overallAccuracy() {
+          if (!this.stats.totalSolved) return 0;
+          return Math.round((this.stats.correctAnswers / this.stats.totalSolved) * 100);
+        },
+
+        completedTrainers() {
+          return this.trainers.filter(trainer => {
+            const result = this.stats.trainerResults[trainer.id];
+            return result && result.bestAccuracy >= 80;
+          }).length;
+        },
+
+        todaySolved() {
+          return this.stats.dailyDate === getLocalDateKey() ? this.stats.dailySolved : 0;
+        },
+
+        dailyProgress() {
+          return Math.min(100, Math.round((this.todaySolved / this.dailyGoal) * 100));
+        },
+
+        dailyGoalDone() {
+          return this.todaySolved >= this.dailyGoal;
+        },
+
+        formattedTimer() {
+          const minutes = Math.floor(this.timerSeconds / 60);
+          const seconds = this.timerSeconds % 60;
+          return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        },
+
+        summaryEmoji() {
+          if (this.roundAccuracy >= 90) return '🏆';
+          if (this.roundAccuracy >= 70) return '✨';
+          return '📚';
+        },
+
+        summaryTitle() {
+          if (this.roundAccuracy >= 90) return 'Великолепно!';
+          if (this.roundAccuracy >= 70) return 'Хорошая работа!';
+          return 'Тренировка завершена';
+        }
+      },
+
+      watch: {
+        stats: {
+          deep: true,
+          handler() {
+            this.persist();
+          }
+        },
+
+        settings: {
+          deep: true,
+          handler(value) {
+            this.stats.settings = { ...value };
+            this.persist();
+          }
+        }
+      },
+
+      mounted() {
+        window.addEventListener('keydown', this.handleGlobalKeydown);
+      },
+
+      beforeUnmount() {
+        window.removeEventListener('keydown', this.handleGlobalKeydown);
+        this.clearTimer();
+
+        if (this.toastTimeout) {
+          window.clearTimeout(this.toastTimeout);
         }
       },
 
       methods: {
-        goHome() {
-          this.currentView = 'catalog';
-          this.activeTrainerId = null;
+        persist() {
+          safeSave({ stats: this.stats });
         },
 
-        startTrainer(id) {
-          const trainer = this.trainers.find(item => item.id === id);
+        setView(view) {
+          this.clearTimer();
+          this.currentView = view;
+        },
 
-          if (!trainer) {
-            return;
-          }
+        goHome() {
+          this.clearTimer();
+          this.currentView = 'catalog';
+          this.activeTrainerId = null;
+          this.activeList = [];
+        },
+
+        openTrainer(id) {
+          const trainer = this.trainers.find(item => item.id === id);
+          if (!trainer) return;
 
           this.activeTrainerId = id;
-          this.activeList = shuffle(trainer.questions);
+          this.askRoundMode();
+        },
+
+        askRoundMode() {
+          const wantsSprint = window.confirm(
+            'Начать обычную тренировку?\n\nНажми «Отмена», чтобы выбрать режим на время.'
+          );
+
+          this.beginRound(wantsSprint ? 'practice' : 'sprint');
+        },
+
+        startRandomTrainer() {
+          const available = this.trainers;
+
+          if (!available.length) return;
+
+          const trainer = available[Math.floor(Math.random() * available.length)];
+          this.activeTrainerId = trainer.id;
+          this.beginRound('practice');
+        },
+
+        beginRound(mode, questions = null) {
+          const trainer = this.currentTrainer;
+          let list = questions ? [...questions] : [...trainer.questions];
+
+          if (!questions && this.settings.shuffle) {
+            list = shuffleArray(list);
+          }
+
+          this.activeList = list;
           this.currentIndex = 0;
+          this.roundMode = mode;
+          this.roundCorrect = 0;
+          this.mistakesList = [];
+          this.lastRoundXp = 0;
           this.answered = false;
           this.answerStatus = null;
           this.selectedOption = null;
-          this.mistakesList = [];
-          this.correctAnswersCount = 0;
           this.currentView = 'trainer';
+
+          this.clearTimer();
+
+          if (mode === 'sprint') {
+            this.timerSeconds = 90;
+            this.timerId = window.setInterval(() => {
+              if (this.timerSeconds <= 1) {
+                this.timerSeconds = 0;
+                this.finishRound(true);
+                return;
+              }
+
+              this.timerSeconds -= 1;
+            }, 1000);
+          }
+        },
+
+        confirmExit() {
+          if (!this.answered && this.currentView === 'trainer') {
+            const shouldExit = window.confirm('Выйти из тренировки? Текущий раунд не будет засчитан.');
+            if (!shouldExit) return;
+          }
+
+          this.goHome();
+        },
+
+        answerAccent(index) {
+          if (this.answered || !this.currentQuestion) return;
+
+          this.selectedOption = index;
+          this.submitAnswer(index === this.currentQuestion.correctIndex);
+        },
+
+        answerChoice(option) {
+          if (this.answered || !this.currentQuestion) return;
+
+          this.selectedOption = option;
+          this.submitAnswer(option === this.currentQuestion.correctAnswer);
+        },
+
+        submitAnswer(isCorrect) {
+          if (this.answered || !this.currentQuestion) return;
+
+          this.answered = true;
+          this.answerStatus = isCorrect ? 'correct' : 'wrong';
+
+          this.stats.totalSolved += 1;
+
+          if (this.stats.dailyDate !== getLocalDateKey()) {
+            this.stats.dailyDate = getLocalDateKey();
+            this.stats.dailySolved = 0;
+          }
+
+          this.stats.dailySolved += 1;
+
+          if (isCorrect) {
+            this.roundCorrect += 1;
+            this.stats.correctAnswers += 1;
+            this.stats.xp += this.roundMode === 'sprint' ? 15 : 10;
+            this.stats.streak += 1;
+            this.stats.bestStreak = Math.max(this.stats.bestStreak, this.stats.streak);
+            this.playSound('correct');
+          } else {
+            this.stats.streak = 0;
+            this.mistakesList.push(this.activeList[this.currentIndex]);
+            this.playSound('wrong');
+          }
+
+          this.lastRoundXp += isCorrect
+            ? (this.roundMode === 'sprint' ? 15 : 10)
+            : 0;
+
+          this.stats.lastAnswerDate = getLocalDateKey();
+          this.persist();
+        },
+
+        nextQuestion() {
+          if (!this.answered) return;
+
+          if (this.isLastQuestion) {
+            this.finishRound(false);
+            return;
+          }
+
+          this.currentIndex += 1;
+          this.answered = false;
+          this.answerStatus = null;
+          this.selectedOption = null;
+        },
+
+        finishRound(timedOut) {
+          this.clearTimer();
+
+          const result = this.stats.trainerResults[this.activeTrainerId] || {
+            attempts: 0,
+            bestAccuracy: 0,
+            lastAccuracy: 0
+          };
+
+          result.attempts += 1;
+          result.lastAccuracy = this.roundAccuracy;
+          result.bestAccuracy = Math.max(result.bestAccuracy, this.roundAccuracy);
+          result.lastPlayed = getLocalDateKey();
+
+          this.stats.trainerResults[this.activeTrainerId] = result;
+          this.stats.roundsCompleted += 1;
+          this.persist();
+
+          this.currentView = 'summary';
+
+          if (timedOut) {
+            this.showToast('Время закончилось. Раунд сохранён.');
+          }
+        },
+
+        restartTrainer() {
+          this.beginRound(this.roundMode);
         },
 
         startMistakesReview() {
-          if (this.mistakesList.length === 0) {
-            return;
-          }
+          const questions = [...this.mistakesList];
 
-          this.activeList = [...this.mistakesList];
-          this.currentIndex = 0;
-          this.answered = false;
-          this.answerStatus = null;
-          this.selectedOption = null;
-          this.mistakesList = [];
-          this.correctAnswersCount = 0;
-          this.currentView = 'trainer';
+          if (!questions.length) return;
+
+          this.beginRound('practice', questions);
         },
 
-        toggleSound() {
-          this.soundEnabled = !this.soundEnabled;
-          writeStoredValue('learnix_sound', this.soundEnabled);
+        letterButtonClass(letter, index) {
+          const classes = {
+            'is-vowel': letter.isVowel
+          };
+
+          if (this.answered && index === this.currentQuestion.correctIndex) {
+            classes.correct = true;
+          } else if (
+            this.answered &&
+            index === this.selectedOption &&
+            this.answerStatus === 'wrong'
+          ) {
+            classes.wrong = true;
+          }
+
+          return classes;
+        },
+
+        optionButtonClass(option, correctAnswer) {
+          if (!this.answered) return '';
+
+          if (option === correctAnswer) return 'correct';
+          if (option === this.selectedOption && this.answerStatus === 'wrong') return 'wrong';
+
+          return '';
+        },
+
+        questionLabel(question) {
+          if (question.rawWord) return question.rawWord;
+          if (question.prefix !== undefined) return `${question.prefix}___${question.suffix}`;
+          if (question.before) return `${question.before} […] ${question.after || ''}`.trim();
+          return question.prompt || 'Задание';
+        },
+
+        trainerProgress(id) {
+          const result = this.stats.trainerResults[id];
+          return result ? Math.min(100, Math.round(result.bestAccuracy)) : 0;
+        },
+
+        isFavorite(id) {
+          return this.stats.favorites.includes(id);
+        },
+
+        toggleFavorite(id) {
+          if (this.isFavorite(id)) {
+            this.stats.favorites = this.stats.favorites.filter(item => item !== id);
+            this.showToast('Тренажёр удалён из избранного.');
+          } else {
+            this.stats.favorites.push(id);
+            this.showToast('Тренажёр добавлен в избранное.');
+          }
+
+          this.persist();
+        },
+
+        toggleSetting(key) {
+          this.settings[key] = !this.settings[key];
+        },
+
+        saveDailyGoal() {
+          this.stats.dailyGoal = this.dailyGoal;
+          this.persist();
+          this.showToast('Ежедневная цель обновлена.');
+        },
+
+        resetProgress() {
+          this.clearTimer();
+          this.stats = makeDefaultStats();
+          this.settings = { ...this.stats.settings };
+          this.dailyGoal = this.stats.dailyGoal;
+          this.searchQuery = '';
+          this.activeCategory = 'all';
+          this.showFavoritesOnly = false;
+          this.showResetModal = false;
+          this.currentView = 'catalog';
+          this.persist();
+          this.showToast('Прогресс сброшен.');
+        },
+
+        clearTimer() {
+          if (this.timerId !== null) {
+            window.clearInterval(this.timerId);
+            this.timerId = null;
+          }
         },
 
         playSound(type) {
-          if (!this.soundEnabled) {
-            return;
-          }
+          if (!this.settings.sound) return;
 
           const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
 
-          if (!AudioContextClass) {
-            return;
-          }
+          let context;
 
           try {
-            const context = new AudioContextClass();
+            context = new AudioContextClass();
             const oscillator = context.createOscillator();
             const gain = context.createGain();
 
             oscillator.connect(gain);
             gain.connect(context.destination);
 
-            if (type === 'success') {
-              oscillator.frequency.setValueAtTime(523.25, context.currentTime);
-              oscillator.frequency.exponentialRampToValueAtTime(783.99, context.currentTime + 0.12);
-              gain.gain.setValueAtTime(0.12, context.currentTime);
-              gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2);
-              oscillator.start();
-              oscillator.stop(context.currentTime + 0.2);
-            } else if (type === 'error') {
-              oscillator.type = 'sawtooth';
-              oscillator.frequency.setValueAtTime(160, context.currentTime);
-              oscillator.frequency.linearRampToValueAtTime(100, context.currentTime + 0.2);
-              gain.gain.setValueAtTime(0.12, context.currentTime);
-              gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.25);
-              oscillator.start();
-              oscillator.stop(context.currentTime + 0.25);
+            if (type === 'correct') {
+              oscillator.type = 'sine';
+              oscillator.frequency.setValueAtTime(530, context.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(790, context.currentTime + 0.1);
+            } else {
+              oscillator.type = 'triangle';
+              oscillator.frequency.setValueAtTime(220, context.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(150, context.currentTime + 0.12);
             }
 
-            oscillator.onended = () => {
-              context.close().catch(() => {});
-            };
+            gain.gain.setValueAtTime(0.07, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.16);
+
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.16);
+            oscillator.onended = () => context.close().catch(() => {});
           } catch {
-            // Звук необязателен: ошибка воспроизведения не влияет на тренировку.
+            if (context) context.close().catch(() => {});
           }
         },
 
-        recordAnswer(isCorrect, question) {
-          if (this.answered) {
+        showToast(message) {
+          this.toastMessage = message;
+
+          if (this.toastTimeout) {
+            window.clearTimeout(this.toastTimeout);
+          }
+
+          this.toastTimeout = window.setTimeout(() => {
+            this.toastMessage = '';
+            this.toastTimeout = null;
+          }, 2600);
+        },
+
+        handleGlobalKeydown(event) {
+          if (this.currentView !== 'trainer' || this.answered) return;
+
+          const target = event.target;
+
+          if (
+            target instanceof HTMLElement &&
+            ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+          ) {
             return;
           }
 
-          this.answered = true;
-          this.totalSolved += 1;
-          writeStoredValue('learnix_solved', this.totalSolved);
+          if (/^[1-4]$/.test(event.key)) {
+            const optionIndex = Number(event.key) - 1;
 
-          if (isCorrect) {
-            this.answerStatus = 'correct';
-            this.correctAnswersCount += 1;
-            this.streak += 1;
-            this.playSound('success');
-          } else {
-            this.answerStatus = 'wrong';
-            this.streak = 0;
-            this.mistakesList.push(question);
-            this.playSound('error');
+            if (this.currentTrainer.type === 'accent') {
+              const vowels = this.currentQuestion.letters.filter(item => item.isVowel);
+              const selectedVowel = vowels[optionIndex];
+
+              if (selectedVowel) {
+                this.answerAccent(selectedVowel.index);
+              }
+            } else {
+              const option = this.currentQuestion.options[optionIndex];
+              if (option !== undefined) this.answerChoice(option);
+            }
           }
 
-          writeStoredValue('learnix_streak', this.streak);
-        },
-
-        handleAccentClick(letter, index) {
-          if (!letter.isVowel || this.answered || !this.currentQuestion) {
-            return;
+          if (event.key === 'Enter' && this.answered) {
+            this.nextQuestion();
           }
-
-          this.selectedOption = index;
-          this.recordAnswer(
-            index === this.currentQuestion.correctIndex,
-            this.activeList[this.currentIndex]
-          );
-        },
-
-        getLetterClass(letter, index) {
-          if (!letter.isVowel) {
-            return 'bg-slate-950/40 border-slate-800 text-slate-500';
-          }
-
-          if (!this.answered) {
-            return 'bg-slate-800/80 hover:bg-slate-700 border-slate-700 text-sky-400 hover:border-sky-400';
-          }
-
-          if (index === this.currentQuestion.correctIndex) {
-            return 'bg-emerald-500 border-emerald-400 text-slate-950 font-black scale-105 shadow-lg shadow-emerald-500/30';
-          }
-
-          if (index === this.selectedOption && this.answerStatus === 'wrong') {
-            return 'bg-rose-500 border-rose-400 text-white animate-shake';
-          }
-
-          return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
-        },
-
-        handleOptionClick(option) {
-          if (this.answered || !this.currentQuestion) {
-            return;
-          }
-
-          this.selectedOption = option;
-          this.recordAnswer(
-            option === this.currentQuestion.correctLetter,
-            this.activeList[this.currentIndex]
-          );
-        },
-
-        getOptionBtnClass(option) {
-          if (!this.answered) {
-            return 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-sky-300 hover:border-sky-400';
-          }
-
-          if (option === this.currentQuestion.correctLetter) {
-            return 'bg-emerald-500 border-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/30';
-          }
-
-          if (option === this.selectedOption && this.answerStatus === 'wrong') {
-            return 'bg-rose-500 border-rose-400 text-white animate-shake';
-          }
-
-          return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
-        },
-
-        handleParonymClick(word) {
-          if (this.answered || !this.currentQuestion) {
-            return;
-          }
-
-          this.selectedOption = word;
-          this.recordAnswer(
-            word === this.currentQuestion.correctWord,
-            this.activeList[this.currentIndex]
-          );
-        },
-
-        getParonymBtnClass(word) {
-          if (!this.answered) {
-            return 'bg-slate-800/80 hover:bg-slate-700 border-slate-700 text-slate-200 hover:border-sky-400';
-          }
-
-          if (word === this.currentQuestion.correctWord) {
-            return 'bg-emerald-500 border-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/20';
-          }
-
-          if (word === this.selectedOption && this.answerStatus === 'wrong') {
-            return 'bg-rose-500 border-rose-400 text-white animate-shake';
-          }
-
-          return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
-        },
-
-        nextQuestion() {
-          if (this.currentIndex + 1 < this.activeList.length) {
-            this.currentIndex += 1;
-            this.answered = false;
-            this.selectedOption = null;
-            this.answerStatus = null;
-            return;
-          }
-
-          this.currentView = 'summary';
         }
       }
     }).mount('#app');
