@@ -3,857 +3,1063 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Learnix — Интерактивный практикум ЕГЭ по русскому языку</title>
-  <!-- Tailwind CSS -->
+  <meta name="theme-color" content="#090d16">
+  <title>Learnix — тренажёры русского языка</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Vue 3 -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #090d16;
     }
+
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
     }
+
     .card-glow:hover {
       box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.2);
     }
+
+    button:focus-visible,
+    [role="button"]:focus-visible {
+      outline: 3px solid #38bdf8;
+      outline-offset: 3px;
+    }
+
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       20%, 60% { transform: translateX(-6px); }
       40%, 80% { transform: translateX(6px); }
     }
+
     .animate-shake {
       animation: shake 0.3s ease-in-out;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col selection:bg-sky-500 selection:text-slate-950">
 
-<div id="app" class="flex-1 flex flex-col max-w-6xl w-full mx-auto p-4 md:p-8">
-  
-  <!-- Верхний бар -->
-  <header class="flex items-center justify-between border-b border-slate-800/80 pb-5 mb-8">
-    <div class="flex items-center gap-3.5 cursor-pointer" @click="goHome">
-      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 flex items-center justify-center font-black text-xl text-slate-950 shadow-lg shadow-sky-500/20">
-        LX
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1 class="font-extrabold text-xl tracking-tight">Learnix</h1>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 font-bold uppercase tracking-wider">ФИПИ 2026/2027</span>
-        </div>
-        <p class="text-xs text-slate-400">Практикум на базе официальных словарей ФИПИ</p>
-      </div>
-    </div>
+<body class="min-h-screen flex flex-col text-slate-100 selection:bg-sky-500 selection:text-slate-950">
+  <div id="app" class="flex-1 flex flex-col max-w-6xl w-full mx-auto p-4 md:p-8">
 
-    <!-- Показатели -->
-    <div class="flex items-center gap-3">
-      <div class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300">
-        <span>Решено заданий:</span>
-        <span class="text-sky-400 font-mono">{{ totalSolved }}</span>
-      </div>
-      <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl text-sm font-semibold text-amber-400">
-        <span>🔥</span>
-        <span class="font-mono">{{ streak }}</span>
-        <span class="text-xs text-slate-500 font-normal hidden md:inline">стрик</span>
-      </div>
-      <button @click="soundEnabled = !soundEnabled" class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition">
-        <span v-if="soundEnabled">🔊</span>
-        <span v-else>🔇</span>
+    <header class="flex items-center justify-between gap-4 border-b border-slate-800/80 pb-5 mb-8">
+      <button
+        type="button"
+        class="flex items-center gap-3.5 text-left"
+        aria-label="На главную"
+        @click="goHome">
+        <span class="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-cyan-400 flex items-center justify-center font-black text-xl text-slate-950 shadow-lg shadow-sky-500/20">
+          LX
+        </span>
+
+        <span>
+          <span class="block font-extrabold text-xl tracking-tight">Learnix</span>
+          <span class="block text-xs text-slate-400">Тренажёры русского языка</span>
+        </span>
       </button>
-    </div>
-  </header>
 
-  <!-- 1. КАТАЛОГ ТРЕНАЖЕРОВ -->
-  <main v-if="currentView === 'catalog'" class="flex-1 flex flex-col justify-center">
-    
-    <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
-      <div>
-        <h2 class="text-2xl font-extrabold text-white">Тематические разделы ЕГЭ</h2>
-        <p class="text-slate-400 text-xs mt-1">Нормативные задания по кодификатору ФИПИ с академическим комментарием</p>
-      </div>
-      <div class="flex gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 text-xs">
-        <button 
-          v-for="cat in categories" 
-          :key="cat.id"
-          @click="activeCategory = cat.id"
-          :class="[
-            'px-3 py-1.5 rounded-lg font-medium transition',
-            activeCategory === cat.id ? 'bg-sky-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-          ]"
-        >
-          {{ cat.title }}
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300">
+          <span>Решено:</span>
+          <span class="text-sky-400 font-mono">{{ totalSolved }}</span>
+        </div>
+
+        <div
+          class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-sm font-semibold text-amber-400"
+          :aria-label="`Серия правильных ответов: ${streak}`">
+          <span aria-hidden="true">🔥</span>
+          <span class="font-mono">{{ streak }}</span>
+          <span class="text-xs text-slate-500 font-normal hidden md:inline">серия</span>
+        </div>
+
+        <button
+          type="button"
+          @click="toggleSound"
+          :aria-label="soundEnabled ? 'Выключить звук' : 'Включить звук'"
+          :title="soundEnabled ? 'Выключить звук' : 'Включить звук'"
+          class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition">
+          <span aria-hidden="true">{{ soundEnabled ? '🔊' : '🔇' }}</span>
         </button>
       </div>
-    </div>
+    </header>
 
-    <!-- Сетка тренажеров -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <div 
-        v-for="trainer in filteredTrainers" 
-        :key="trainer.id"
-        @click="startTrainer(trainer.id)"
-        class="group bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-sky-500/50 rounded-2xl p-6 transition-all duration-300 cursor-pointer flex flex-col justify-between card-glow"
-      >
+    <!-- Каталог -->
+    <main v-if="currentView === 'catalog'" class="flex-1">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-6">
         <div>
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-md bg-slate-800 text-sky-400 border border-slate-700">
-              {{ trainer.examTag }}
+          <h1 class="text-2xl md:text-3xl font-extrabold text-white">Тренажёры русского языка</h1>
+          <p class="text-slate-400 text-sm mt-2">
+            Практикуйте орфографию, произношение и точность словоупотребления.
+          </p>
+        </div>
+
+        <div class="flex gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 text-xs max-w-full overflow-x-auto">
+          <button
+            v-for="category in categories"
+            :key="category.id"
+            type="button"
+            @click="activeCategory = category.id"
+            :aria-pressed="activeCategory === category.id"
+            :class="[
+              'px-3 py-2 rounded-lg font-medium transition whitespace-nowrap',
+              activeCategory === category.id
+                ? 'bg-sky-500 text-slate-950 font-bold'
+                : 'text-slate-400 hover:text-white'
+            ]">
+            {{ category.title }}
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <article
+          v-for="trainer in filteredTrainers"
+          :key="trainer.id"
+          role="button"
+          tabindex="0"
+          @click="startTrainer(trainer.id)"
+          @keydown.enter="startTrainer(trainer.id)"
+          @keydown.space.prevent="startTrainer(trainer.id)"
+          class="group bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-sky-500/50 rounded-2xl p-6 transition-all duration-300 cursor-pointer flex flex-col justify-between card-glow">
+          <div>
+            <div class="flex items-center justify-between gap-3 mb-4">
+              <span class="text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-md bg-slate-800 text-sky-400 border border-slate-700">
+                {{ trainer.tag }}
+              </span>
+              <span class="text-xs text-slate-500 font-mono whitespace-nowrap">
+                {{ trainer.questions.length }} заданий
+              </span>
+            </div>
+
+            <div class="h-16 flex items-center justify-center my-3 bg-slate-950/40 rounded-xl border border-slate-800/50">
+              <span class="font-mono text-xl font-bold tracking-wider text-slate-300 group-hover:text-white transition">
+                {{ trainer.preview }}
+              </span>
+            </div>
+
+            <h2 class="font-bold text-lg mb-1.5 text-white group-hover:text-sky-400 transition">
+              {{ trainer.title }}
+            </h2>
+            <p class="text-slate-400 text-sm leading-relaxed">{{ trainer.description }}</p>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs font-semibold text-sky-400">
+            <span>Начать тренировку</span>
+            <span class="text-base group-hover:translate-x-1 transition-transform" aria-hidden="true">→</span>
+          </div>
+        </article>
+
+        <p v-if="filteredTrainers.length === 0" class="text-slate-400 col-span-full py-12 text-center">
+          В этом разделе пока нет тренажёров.
+        </p>
+      </div>
+    </main>
+
+    <!-- Тренировка -->
+    <main v-else-if="currentView === 'trainer'" class="flex-1 flex flex-col justify-center items-center">
+      <div class="w-full max-w-xl">
+        <div class="flex items-center justify-between gap-3 mb-3 text-xs text-slate-400">
+          <button
+            type="button"
+            @click="goHome"
+            class="flex items-center gap-1.5 hover:text-white transition font-medium">
+            <span aria-hidden="true">←</span>
+            Выйти в меню
+          </button>
+
+          <div class="flex items-center gap-3 text-right">
+            <span class="font-semibold text-slate-300">{{ currentTrainer.title }}</span>
+            <span class="font-mono text-sky-400 whitespace-nowrap">
+              {{ currentIndex + 1 }} / {{ activeList.length }}
             </span>
-            <span class="text-xs text-slate-500 font-mono">{{ trainer.questions.length }} заданий</span>
-          </div>
-
-          <div class="h-16 flex items-center justify-center my-3 bg-slate-950/40 rounded-xl border border-slate-800/50">
-            <span class="font-mono text-xl font-bold tracking-wider text-slate-300 group-hover:text-white transition" v-html="trainer.previewHtml"></span>
-          </div>
-
-          <h3 class="font-bold text-lg mb-1.5 text-white group-hover:text-sky-400 transition">{{ trainer.title }}</h3>
-          <p class="text-slate-400 text-xs leading-relaxed">{{ trainer.description }}</p>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs font-semibold text-sky-400">
-          <span>Начать отработку</span>
-          <span class="text-base group-hover:translate-x-1 transition-transform">→</span>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- 2. ЭКРАН ТРЕНИРОВКИ -->
-  <main v-else-if="currentView === 'trainer'" class="flex-1 flex flex-col justify-center items-center">
-    <div class="w-full max-w-xl">
-      
-      <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
-        <button @click="goHome" class="flex items-center gap-1.5 hover:text-white transition font-medium">
-          ← Выйти в меню
-        </button>
-        <div class="flex items-center gap-3">
-          <span class="font-semibold text-slate-300">{{ currentTrainer.title }}</span>
-          <span class="font-mono text-sky-400">{{ currentIndex + 1 }} / {{ activeList.length }}</span>
-        </div>
-      </div>
-
-      <div class="w-full h-1.5 bg-slate-900 rounded-full mb-6 overflow-hidden border border-slate-800/60">
-        <div class="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-300" :style="{ width: ((currentIndex + 1) / activeList.length) * 100 + '%' }"></div>
-      </div>
-
-      <!-- Карточка -->
-      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative">
-        
-        <!-- Тип 1: Орфоэпия -->
-        <div v-if="currentTrainer.type === 'accents'" class="text-center py-4">
-          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">Укажите гласную букву, на которую падает нормативное ударение</p>
-          <div class="flex justify-center items-center gap-2 mb-8 flex-wrap">
-            <button 
-              v-for="(letterObj, idx) in currentQuestion.letters" 
-              :key="idx"
-              @click="handleAccentClick(letterObj, idx)"
-              :disabled="answered"
-              :class="[
-                'w-11 h-14 md:w-14 md:h-16 text-2xl md:text-3xl font-mono font-bold rounded-xl transition-all duration-200 border flex items-center justify-center',
-                letterObj.isVowel ? 'cursor-pointer hover:-translate-y-1' : 'cursor-default opacity-80',
-                getLetterClass(letterObj, idx)
-              ]"
-            >
-              {{ letterObj.char }}
-            </button>
           </div>
         </div>
 
-        <!-- Тип 2: Пропуск буквы -->
-        <div v-else-if="currentTrainer.type === 'letter_gap'" class="text-center py-4">
-          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">{{ currentQuestion.instruction || 'Выберите правильный вариант' }}</p>
-          
-          <div class="font-mono text-3xl md:text-4xl font-bold tracking-wider mb-8">
-            <span>{{ currentQuestion.prefix }}</span>
-            <span class="inline-block px-2 text-sky-400 border-b-4 border-sky-400 mx-1">
-              {{ answered ? currentQuestion.correctLetter : '?' }}
-            </span>
-            <span>{{ currentQuestion.suffix }}</span>
-          </div>
-
-          <div class="flex justify-center gap-3">
-            <button 
-              v-for="option in currentQuestion.options" 
-              :key="option"
-              @click="handleOptionClick(option)"
-              :disabled="answered"
-              :class="[
-                'min-w-[64px] px-5 h-14 text-xl font-mono font-bold rounded-xl border transition-all duration-200',
-                getOptionBtnClass(option)
-              ]"
-            >
-              {{ option }}
-            </button>
-          </div>
+        <div
+          class="w-full h-1.5 bg-slate-900 rounded-full mb-6 overflow-hidden border border-slate-800/60"
+          role="progressbar"
+          :aria-valuenow="currentIndex + 1"
+          :aria-valuemin="1"
+          :aria-valuemax="activeList.length"
+          :aria-label="`Задание ${currentIndex + 1} из ${activeList.length}`">
+          <div
+            class="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-300"
+            :style="{ width: `${((currentIndex + 1) / activeList.length) * 100}%` }"></div>
         </div>
 
-        <!-- Тип 3: Паронимы -->
-        <div v-else-if="currentTrainer.type === 'paronyms'" class="py-2">
-          <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-4 text-center">Выберите верный пароним в соответствии со словарной нормой</p>
-          
-          <div class="text-base md:text-lg font-medium leading-relaxed mb-6 text-center text-slate-200 bg-slate-950/40 p-4 rounded-xl border border-slate-800">
-            {{ currentQuestion.sentenceBefore }}
-            <span class="px-2.5 py-1 rounded bg-sky-950 text-sky-400 border border-sky-800 font-bold mx-1">[ ... ]</span>
-            {{ currentQuestion.sentenceAfter }}
-          </div>
+        <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl">
+          <!-- Ударения -->
+          <div v-if="currentTrainer.type === 'accents'" class="text-center py-4">
+            <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">
+              Выберите гласную, на которую падает ударение
+            </p>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button 
-              v-for="word in currentQuestion.options" 
-              :key="word"
-              @click="handleParonymClick(word)"
-              :disabled="answered"
-              :class="[
-                'p-4 rounded-xl text-left border font-semibold text-sm transition-all duration-200',
-                getParonymBtnClass(word)
-              ]"
-            >
-              {{ word }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Академическое пояснение -->
-        <div v-if="answered" class="mt-6 pt-5 border-t border-slate-800/80 text-left">
-          <div class="flex items-start gap-3 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
-            <span class="text-2xl">{{ answerStatus === 'correct' ? '✅' : '❌' }}</span>
-            <div class="text-xs space-y-1.5 flex-1">
-              <p class="font-bold text-slate-200 text-sm">
-                {{ answerStatus === 'correct' ? 'Верно' : 'Неверно. Правильный вариант выделен зеленым цветом.' }}
-              </p>
-              <p class="text-slate-300 leading-relaxed font-normal">{{ currentQuestion.rule }}</p>
+            <div class="flex justify-center items-center gap-2 mb-8 flex-wrap">
+              <button
+                v-for="(letter, index) in currentQuestion.letters"
+                :key="index"
+                type="button"
+                @click="handleAccentClick(letter, index)"
+                :disabled="answered || !letter.isVowel"
+                :aria-label="`${letter.char}, позиция ${index + 1}`"
+                :class="[
+                  'w-11 h-14 md:w-14 md:h-16 text-2xl md:text-3xl font-mono font-bold rounded-xl transition-all duration-200 border flex items-center justify-center',
+                  letter.isVowel ? 'cursor-pointer hover:-translate-y-1' : 'cursor-default opacity-80',
+                  getLetterClass(letter, index)
+                ]">
+                {{ letter.char }}
+              </button>
             </div>
           </div>
 
-          <button 
-            @click="nextQuestion"
-            class="w-full mt-4 py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-sky-500/20 active:scale-[0.99]"
-          >
-            {{ currentIndex + 1 < activeList.length ? 'Следующее задание →' : 'Посмотреть результаты раунда 📊' }}
+          <!-- Пропуск буквы -->
+          <div v-else-if="currentTrainer.type === 'letter_gap'" class="text-center py-4">
+            <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-6">
+              {{ currentQuestion.instruction || 'Выберите правильный вариант' }}
+            </p>
+
+            <div class="font-mono text-3xl md:text-4xl font-bold tracking-wider mb-8 break-words">
+              <span>{{ currentQuestion.prefix }}</span>
+              <span class="inline-block px-2 text-sky-400 border-b-4 border-sky-400 mx-1">
+                {{ answered ? currentQuestion.correctLetter : '?' }}
+              </span>
+              <span>{{ currentQuestion.suffix }}</span>
+            </div>
+
+            <div class="flex justify-center gap-3 flex-wrap">
+              <button
+                v-for="option in currentQuestion.options"
+                :key="option"
+                type="button"
+                @click="handleOptionClick(option)"
+                :disabled="answered"
+                :class="[
+                  'min-w-[64px] px-5 h-14 text-xl font-mono font-bold rounded-xl border transition-all duration-200',
+                  getOptionBtnClass(option)
+                ]">
+                {{ option }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Паронимы -->
+          <div v-else-if="currentTrainer.type === 'paronyms'" class="py-2">
+            <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-4 text-center">
+              Выберите слово, подходящее по смыслу
+            </p>
+
+            <div class="text-base md:text-lg font-medium leading-relaxed mb-6 text-center text-slate-200 bg-slate-950/40 p-4 rounded-xl border border-slate-800">
+              {{ currentQuestion.sentenceBefore }}
+              <span class="px-2.5 py-1 rounded bg-sky-950 text-sky-400 border border-sky-800 font-bold mx-1">
+                [ ... ]
+              </span>
+              {{ currentQuestion.sentenceAfter }}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                v-for="word in currentQuestion.options"
+                :key="word"
+                type="button"
+                @click="handleParonymClick(word)"
+                :disabled="answered"
+                :class="[
+                  'p-4 rounded-xl text-left border font-semibold text-sm transition-all duration-200',
+                  getParonymBtnClass(word)
+                ]">
+                {{ word }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Обратная связь -->
+          <div v-if="answered" class="mt-6 pt-5 border-t border-slate-800/80 text-left">
+            <div class="flex items-start gap-3 bg-slate-950/70 p-4 rounded-2xl border border-slate-800">
+              <span class="text-2xl" aria-hidden="true">
+                {{ answerStatus === 'correct' ? '✅' : '❌' }}
+              </span>
+
+              <div class="text-sm space-y-1.5 flex-1">
+                <p class="font-bold text-slate-200">
+                  {{ answerStatus === 'correct' ? 'Верно!' : 'Неверно. Правильный ответ выделен зелёным.' }}
+                </p>
+                <p class="text-slate-300 leading-relaxed font-normal">{{ currentQuestion.rule }}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              @click="nextQuestion"
+              class="w-full mt-4 py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-sky-500/20 active:scale-[0.99]">
+              {{ currentIndex + 1 < activeList.length ? 'Следующее задание →' : 'Посмотреть результаты 📊' }}
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Результаты -->
+    <main v-else-if="currentView === 'summary'" class="flex-1 flex flex-col justify-center items-center">
+      <section class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl">
+        <div class="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-3xl mx-auto mb-4">
+          {{ roundAccuracy >= 80 ? '🏆' : '📖' }}
+        </div>
+
+        <h2 class="text-2xl font-bold mb-1">Раунд завершён</h2>
+        <p class="text-sm text-slate-400 mb-6">{{ currentTrainer.title }}</p>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+            <p class="text-[11px] text-slate-500 uppercase font-bold">Правильных ответов</p>
+            <p class="text-2xl font-black text-sky-400 font-mono mt-0.5">{{ roundAccuracy }}%</p>
+          </div>
+          <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+            <p class="text-[11px] text-slate-500 uppercase font-bold">Ошибок</p>
+            <p class="text-2xl font-black text-rose-400 font-mono mt-0.5">{{ mistakesList.length }}</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <button
+            v-if="mistakesList.length > 0"
+            type="button"
+            @click="startMistakesReview"
+            class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition flex items-center justify-center gap-2">
+            <span aria-hidden="true">🔄</span>
+            Повторить ошибки ({{ mistakesList.length }})
+          </button>
+
+          <button
+            type="button"
+            @click="startTrainer(currentTrainer.id)"
+            class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition">
+            Пройти блок ещё раз
+          </button>
+
+          <button
+            type="button"
+            @click="goHome"
+            class="w-full py-3 rounded-xl border border-slate-800 hover:bg-slate-800/40 text-slate-400 hover:text-white font-medium text-sm transition">
+            Вернуться к каталогу
           </button>
         </div>
+      </section>
+    </main>
 
-      </div>
-    </div>
-  </main>
+    <footer class="mt-8 text-center text-xs text-slate-600 border-t border-slate-900 pt-4">
+      Learnix · Учебный проект для практики русского языка
+    </footer>
+  </div>
 
-  <!-- 3. РЕЗУЛЬТАТЫ РАУНДА -->
-  <main v-else-if="currentView === 'summary'" class="flex-1 flex flex-col justify-center items-center">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl">
-      <div class="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-3xl mx-auto mb-4">
-        {{ roundAccuracy >= 80 ? '🏆' : '📖' }}
-      </div>
-      
-      <h2 class="text-2xl font-bold mb-1">Раунд завершен</h2>
-      <p class="text-xs text-slate-400 mb-6">{{ currentTrainer.title }}</p>
+  <script>
+    const { createApp } = Vue;
 
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-          <p class="text-[11px] text-slate-500 uppercase font-bold">Успешность</p>
-          <p class="text-2xl font-black text-sky-400 font-mono mt-0.5">{{ roundAccuracy }}%</p>
-        </div>
-        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-          <p class="text-[11px] text-slate-500 uppercase font-bold">Ошибок</p>
-          <p class="text-2xl font-black text-rose-400 font-mono mt-0.5">{{ mistakesList.length }}</p>
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-2.5">
-        <button 
-          v-if="mistakesList.length > 0"
-          @click="startMistakesReview"
-          class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition flex items-center justify-center gap-2"
-        >
-          <span>🔄</span> Отработать ошибки ({{ mistakesList.length }})
-        </button>
-
-        <button 
-          @click="startTrainer(currentTrainer.id)"
-          class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition"
-        >
-          Пройти блок повторно
-        </button>
-
-        <button 
-          @click="goHome"
-          class="w-full py-3 rounded-xl border border-slate-800 hover:bg-slate-800/40 text-slate-400 hover:text-white font-medium text-xs transition"
-        >
-          Вернуться к каталогу тем
-        </button>
-      </div>
-    </div>
-  </main>
-
-  <footer class="mt-8 text-center text-xs text-slate-600 border-t border-slate-900 pt-4">
-    Learnix • Индивидуальный проект • Материалы соответствуют нормативным словарям и кодификатору ФИПИ
-  </footer>
-
-</div>
-
-<script>
-  const { createApp } = Vue;
-
-  createApp({
-    data() {
-      return {
-        currentView: 'catalog',
-        activeCategory: 'all',
-        activeTrainerId: null,
-        currentIndex: 0,
-        answered: false,
-        answerStatus: null,
-        selectedOption: null,
-        streak: parseInt(localStorage.getItem('learnix_streak') || '0'),
-        totalSolved: parseInt(localStorage.getItem('learnix_solved') || '0'),
-        soundEnabled: true,
-
-        mistakesList: [],
-        correctAnswersCount: 0,
-        activeList: [],
-
-        categories: [
-          { id: 'all', title: 'Все темы' },
-          { id: 'ortho', title: 'Орфография' },
-          { id: 'norms', title: 'Орфоэпия' },
-          { id: 'lexis', title: 'Лексика' }
-        ],
-
-        // БАНК ЗАДАНИЙ (СТРОГО ФИПИ)
-        trainers: [
-          {
-            id: 'accents',
-            category: 'norms',
-            examTag: 'Задание 4 ФИПИ',
-            title: 'Орфоэпический словник',
-            description: 'Постановка нормативного ударения в словах из официального ежегодного словника ФИПИ.',
-            previewHtml: 'катал<span class="text-sky-400 underline">О</span>г',
-            type: 'accents',
-            questions: [
-              {
-                rawWord: "добрала",
-                vowelsIndex: [1, 4, 6],
-                correctIndex: 6,
-                rule: "Норма ФИПИ: в подавляющем большинстве глаголов прошедшего времени женского рода ударение падает на окончание -А (добралА, бралА, взялА, жилА)."
-              },
-              {
-                rawWord: "торты",
-                vowelsIndex: [1, 4],
-                correctIndex: 1,
-                rule: "Норма ФИПИ: существительное с неподвижным ударением на основе во всех формах падежа и числа (тОрты, тОрта, тОртами, о тОртах)."
-              },
-              {
-                rawWord: "звонит",
-                vowelsIndex: [2, 5],
-                correctIndex: 5,
-                rule: "Норма ФИПИ: глагол II спряжения на -ИТЬ сохраняет неподвижное ударение на личном окончании (звонИшь, звонИт, звонИм, звонЯт)."
-              },
-              {
-                rawWord: "жалюзи",
-                vowelsIndex: [1, 4, 6],
-                correctIndex: 6,
-                rule: "Норма ФИПИ: заимствованное несклоняемое существительное французского происхождения, ударение строго на последний слог (жалюзИ)."
-              },
-              {
-                rawWord: "каталог",
-                vowelsIndex: [1, 3, 6],
-                correctIndex: 6,
-                rule: "Норма ФИПИ: слова греческого происхождения на -ЛОГ, обозначающие списки и документы, имеют ударение на последний слог (каталОг, диалОг, монолОг; исключение: анАлог)."
-              },
-              {
-                rawWord: "кралась",
-                vowelsIndex: [2, 4],
-                correctIndex: 2,
-                rule: "Норма ФИПИ: входит в группу глаголов-исключений женского рода прош. времени, где ударение остается на основе (крАлась, клАла, слАла, послАла)."
-              },
-              {
-                rawWord: "банты",
-                vowelsIndex: [1, 4],
-                correctIndex: 1,
-                rule: "Норма ФИПИ: существительное с неподвижным ударением на основе (бАнты, бАнтов, бАнтам)."
-              },
-              {
-                rawWord: "донизу",
-                vowelsIndex: [1, 3, 5],
-                correctIndex: 1,
-                rule: "Норма ФИПИ: наречие с приставкой ДО-. В наречиях с приставками ДО-, ЗА-, С- ударение падает на приставку (дОнизу, дОверху, дОсуха; но: добелА, докраснА)."
-              }
-            ]
-          },
-
-          {
-            id: 'roots',
-            category: 'ortho',
-            examTag: 'Задание 9 ФИПИ',
-            title: 'Правописание корней',
-            description: 'Чередующиеся гласные корня, проверяемые и непроверяемые безударные позиции.',
-            previewHtml: 'прик<span class="text-emerald-400 border-b-2 border-emerald-400 mx-0.5">о</span>сновение',
-            type: 'letter_gap',
-            questions: [
-              {
-                instruction: "Чередование в корне КОС / КАС",
-                prefix: "прик",
-                suffix: "сновение",
-                correctLetter: "о",
-                options: ["о", "а"],
-                rule: "Правило кодификатора: выбор О/А в корне зависит от суффикса -А-. Перед суффиксом -А- пишется корень КАС- (касаться), при отсутствии суффикса — КОС- (прикосновение)."
-              },
-              {
-                instruction: "Непроверяемая безударная гласная (словарное слово)",
-                prefix: "в",
-                suffix: "негрет",
-                correctLetter: "и",
-                options: ["и", "е"],
-                rule: "Норма орфографического словаря РАН: словарное слово французского происхождения (от vinaigre — уксус). Написание корня винегрет- является нормативно фиксированным."
-              },
-              {
-                instruction: "Чередование в корне ГОР / ГАР",
-                prefix: "заг",
-                suffix: "релый",
-                correctLetter: "о",
-                options: ["о", "а"],
-                rule: "Правило кодификатора: в корне гар-/гор- без ударения пишется буква О (загоре́лый, подгоре́ть). Под ударением пишется А (зага́р, уга́р)."
-              },
-              {
-                instruction: "Чередование в корне СКАК / СКОЧ",
-                prefix: "выск",
-                suffix: "чить",
-                correctLetter: "о",
-                options: ["о", "а"],
-                rule: "Правило кодификатора: в безударном корне перед буквой К пишется А (скака́ть), перед буквой Ч пишется О (вы́скочить). Исключения: скачо́к, скачу́."
-              },
-              {
-                instruction: "Чередование в корне МАК / МОК",
-                prefix: "пром",
-                suffix: "кашка",
-                correctLetter: "о",
-                options: ["о", "а"],
-                rule: "Правило кодификатора: корень МАК- обозначает 'погружать в жидкость' (макать хлеб), МОК- — 'пропускать жидкость, становиться влажным' (промокательная бумага, непромокаемый)."
-              },
-              {
-                instruction: "Непроверяемая безударная гласная (словарное слово)",
-                prefix: "пал",
-                suffix: "садник",
-                correctLetter: "и",
-                options: ["и", "е"],
-                rule: "Норма орфографического словаря: заимствование (франц. palissade). Пишется исключительно с буквой И в первом слоге: палисадник."
-              }
-            ]
-          },
-
-          {
-            id: 'prefixes',
-            category: 'ortho',
-            examTag: 'Задание 10 ФИПИ',
-            title: 'Приставки ПРЕ- и ПРИ-',
-            description: 'Семантическое различение значений приставок пре- и при- по кодификатору ЕГЭ.',
-            previewHtml: 'пр<span class="text-sky-400 border-b-2 border-sky-400 mx-0.5">и</span>морский',
-            type: 'letter_gap',
-            questions: [
-              {
-                instruction: "Значение пространственной близости",
-                prefix: "пр",
-                suffix: "морский",
-                correctLetter: "и",
-                options: ["и", "е"],
-                rule: "Кодификатор ФИПИ: приставка ПРИ- пишется в значении нахождения вблизи объекта (приморский = находящийся около моря, пришкольный, прибрежный)."
-              },
-              {
-                instruction: "Значение высокой степени качества",
-                prefix: "пр",
-                suffix: "милый",
-                correctLetter: "е",
-                options: ["е", "и"],
-                rule: "Кодификатор ФИПИ: приставка ПРЕ- пишется в значении предельной степени признака, тождественной слову 'очень' (премилый = очень милый, презабавный)."
-              },
-              {
-                instruction: "Значение неполноты действия",
-                prefix: "пр",
-                suffix: "открыть",
-                correctLetter: "и",
-                options: ["и", "е"],
-                rule: "Кодификатор ФИПИ: приставка ПРИ- обозначает совершение действия в неполном объеме или на ограниченное время (приоткрыть, присесть, привстать)."
-              },
-              {
-                instruction: "Близость по значению к приставке ПЕРЕ-",
-                prefix: "пр",
-                suffix: "одолеть",
-                correctLetter: "е",
-                options: ["е", "и"],
-                rule: "Кодификатор ФИПИ: приставка ПРЕ- пишется в значениях, близких по смыслу к приставке ПЕРЕ- (преодолеть = пересилить барьер, преградить = перегородить)."
-              },
-              {
-                instruction: "Словарное иноязычное слово",
-                prefix: "пр",
-                suffix: "зидент",
-                correctLetter: "е",
-                options: ["е", "и"],
-                rule: "Норма орфографического словаря: заимствованное существительное латинского корня (praesidens). Написание буквы Е нормативно зафиксировано в словарях."
-              },
-              {
-                instruction: "Значение доведения действия до результата",
-                prefix: "пр",
-                suffix: "думать",
-                correctLetter: "и",
-                options: ["и", "е"],
-                rule: "Кодификатор ФИПИ: приставка ПРИ- используется при обозначении завершения действия, исчерпанности процесса (придумать, приручить)."
-              }
-            ]
-          },
-
-          {
-            id: 'suffixes',
-            category: 'ortho',
-            examTag: 'Задание 11 ФИПИ',
-            title: 'Правописание суффиксов',
-            description: 'Суффиксы глаголов -ОВА-/-ЕВА- и -ЫВА-/-ИВА-, прилагательных -ИВ-/-ЕВ- и исключения.',
-            previewHtml: 'исследов<span class="text-violet-400 border-b-2 border-violet-400 mx-0.5">а</span>ть',
-            type: 'letter_gap',
-            questions: [
-              {
-                instruction: "Суффикс глагола в форме инфинитива",
-                prefix: "исследов",
-                suffix: "ть",
-                correctLetter: "а",
-                options: ["а", "ыва"],
-                rule: "Кодификатор ФИПИ: ставим глагол в 1-е лицо ед. ч. настоящего времени: 'я исслед-УЮ'. Если форма оканчивается на -ую/-юю, в инфинитиве пишется суффикс -ОВА-/-ЕВА-."
-              },
-              {
-                instruction: "Суффикс глагола: сохранение основы в 1-м лице",
-                prefix: "застёг",
-                suffix: "вать",
-                correctLetter: "ива",
-                options: ["ива", "ева"],
-                rule: "Кодификатор ФИПИ: ставим глагол в 1-е лицо ед. ч.: 'я застёг-ИВА-Ю'. Суффикс сохраняется, следовательно, в инфинитиве пишется -ИВА-/-ЫВА-."
-              },
-              {
-                instruction: "Слово-исключение перед ударным -ВА-",
-                prefix: "затм",
-                suffix: "вать",
-                correctLetter: "е",
-                options: ["е", "и"],
-                rule: "Нормативное исключение: перед ударным суффиксом -ВА- пишется та же гласная, что и в инфинитиве без этого суффикса (затмить $\\to$ исключение: затмевать, продлевать, застревать)."
-              },
-              {
-                instruction: "Безударный суффикс прилагательного",
-                prefix: "фасол",
-                suffix: "вый",
-                correctLetter: "е",
-                options: ["е", "и"],
-                rule: "Кодификатор ФИПИ: в суффиксах прилагательных -ИВ-/-ЕВ- под ударением пишется И (краси́вый, правди́вый), в безударном положении — Е (фасо́левый, сире́невый)."
-              },
-              {
-                instruction: "Суффикс глагола (форма 1-го лица на -ую)",
-                prefix: "ноч",
-                suffix: "вать",
-                correctLetter: "е",
-                options: ["е", "ива"],
-                rule: "Кодификатор ФИПИ: проверяем через 1-е лицо: 'я ноч-УЮ'. Окончание на -ую свидетельствует о наличии суффикса -ЕВА-."
-              }
-            ]
-          },
-
-          {
-            id: 'n_nn',
-            category: 'ortho',
-            examTag: 'Задание 15 ФИПИ',
-            title: 'Правописание Н и НН',
-            description: 'Нормы написания Н и НН в отыменных, отглагольных прилагательных и полных причастиях.',
-            previewHtml: 'масл<span class="text-pink-400 border-b-2 border-pink-400 mx-0.5">ян</span>ый',
-            type: 'letter_gap',
-            questions: [
-              {
-                instruction: "Отыменное прилагательное: суффикс -ЯН-",
-                prefix: "масл",
-                suffix: "ый крем",
-                correctLetter: "ян",
-                options: ["ян", "янн"],
-                rule: "Кодификатор ФИПИ: в отыменных прилагательных с суффиксами -АН-, -ЯН-, -ИН- пишется одна буква Н (масляный, кожаный, соколиный). Исключения: стеклянный, оловянный, деревянный."
-              },
-              {
-                instruction: "Полное причастие при наличии зависимого слова",
-                prefix: "тушё",
-                suffix: "ое в печи мясо",
-                correctLetter: "нн",
-                options: ["нн", "н"],
-                rule: "Кодификатор ФИПИ: в полных причастиях пишется две буквы НН при наличии зависимых слов ('тушенное' ГДЕ? 'в печи')."
-              },
-              {
-                instruction: "Традиционное исключение отыменных прилагательных",
-                prefix: "дерев",
-                suffix: "ый дом",
-                correctLetter: "янн",
-                options: ["янн", "ян"],
-                rule: "Нормативное исключение: слова 'стеклянный', 'оловянный', 'деревянный' пишутся с удвоенной буквой НН во всех падежах."
-              },
-              {
-                instruction: "Одиночное отглагольное прилагательное",
-                prefix: "ране",
-                suffix: "ый боец",
-                correctLetter: "н",
-                options: ["н", "нн"],
-                rule: "Кодификатор ФИПИ: в отглагольных прилагательных несовершенного вида без приставок и зависимых слов пишется одна Н (раненый солдат; но: израненный боец, раненный в руку боец)."
-              },
-              {
-                instruction: "Прилагательное от глагола совершенного вида",
-                prefix: "купл",
-                suffix: "ый товар",
-                correctLetter: "енн",
-                options: ["енн", "ен"],
-                rule: "Кодификатор ФИПИ: причастия и отглагольные прилагательные, образованные от глаголов совершенного вида (что сделать? — купить), пишутся с двумя буквами НН."
-              }
-            ]
-          },
-
-          {
-            id: 'paronyms',
-            category: 'lexis',
-            examTag: 'Задание 5 ФИПИ',
-            title: 'Словник паронимов ФИПИ',
-            description: 'Лексическая сочетаемость паронимических пар из официального вопросника ЕГЭ.',
-            previewHtml: 'годовалый / годовой',
-            type: 'paronyms',
-            questions: [
-              {
-                sentenceBefore: "В парке гуляла женщина с",
-                sentenceAfter: "ребенком.",
-                options: ["годовалым", "годовым"],
-                correctWord: "годовалым",
-                rule: "Словник паронимов ФИПИ: ГОДОВАЛЫЙ — в возрасте одного года, относящийся к возрасту в один год (годовалый ребенок). ГОДОВОЙ — рассчитанный на целый год, относящийся к периоду года (годовой отчет, годовая оценка)."
-              },
-              {
-                sentenceBefore: "Перед выходом на улицу в мороз необходимо",
-                sentenceAfter: "теплое пальто.",
-                options: ["надеть", "одеть"],
-                correctWord: "надеть",
-                rule: "Словник паронимов ФИПИ: НАДЕТЬ — надевать что-либо на себя или на другого человека (надеть пальто, шапку). ОДЕТЬ — облекать кого-либо в одежду (одеть ребенка, больного)."
-              },
-              {
-                sentenceBefore: "Пожилой мастер проявил себя как",
-                sentenceAfter: "реставратор антиквариата.",
-                options: ["искусный", "искусственный"],
-                correctWord: "искусный",
-                rule: "Словник паронимов ФИПИ: ИСКУСНЫЙ — умелый, обладающий высоким мастерством (искусный мастер, оратор). ИСКУССТВЕННЫЙ — ненатуральный, созданный человеком (искусственный шелк, свет)."
-              },
-              {
-                sentenceBefore: "В вопросах точных наук он показал себя абсолютным",
-                sentenceAfter: ", путающим базовые понятия.",
-                options: ["невеждой", "невежей"],
-                correctWord: "невеждой",
-                rule: "Словник паронимов ФИПИ: НЕВЕЖДА — малообразованный, несведущий в какой-либо области человек. НЕВЕЖА — грубый, невоспитанный, нарушающий правила этикета человек."
-              },
-              {
-                sentenceBefore: "Разведчики скрытно проникли во",
-                sentenceAfter: "расположение войск.",
-                options: ["вражеское", "враждебное"],
-                correctWord: "вражеское",
-                rule: "Словник паронимов ФИПИ: ВРАЖЕСКИЙ — относящийся к неприятелю, принадлежащий врагу (вражеский лагерь, танк). ВРАЖДЕБНЫЙ — полный неприязни, ненависти (враждебный взгляд, отношение)."
-              },
-              {
-                sentenceBefore: "Кондуктор напомнил, что своевременная",
-                sentenceAfter: "проезда обязательна.",
-                options: ["оплата", "выплата"],
-                correctWord: "оплата",
-                rule: "Словник паронимов ФИПИ: ОПЛАТА — внесение платы за товар или услугу (оплата проезда, труда, счетов). ВЫПЛАТА — выдача причитающихся денежных средств (выплата пенсий, пособий)."
-              }
-            ]
-          }
-        ]
-      };
-    },
-
-    computed: {
-      filteredTrainers() {
-        if (this.activeCategory === 'all') return this.trainers;
-        return this.trainers.filter(t => t.category === this.activeCategory);
-      },
-      currentTrainer() {
-        return this.trainers.find(t => t.id === this.activeTrainerId) || this.trainers[0];
-      },
-      currentQuestion() {
-        const q = this.activeList[this.currentIndex];
-        if (this.currentTrainer.type === 'accents' && q) {
-          const vowels = ['а', 'о', 'у', 'ы', 'э', 'е', 'ё', 'и', 'ю', 'я'];
-          return {
-            ...q,
-            letters: q.rawWord.split('').map((char, index) => ({
-              char,
-              index,
-              isVowel: vowels.includes(char.toLowerCase())
-            }))
-          };
-        }
-        return q;
-      },
-      roundAccuracy() {
-        if (!this.activeList.length) return 0;
-        return Math.round((this.correctAnswersCount / this.activeList.length) * 100);
-      }
-    },
-
-    methods: {
-      goHome() {
-        this.currentView = 'catalog';
-        this.activeTrainerId = null;
-      },
-
-      startTrainer(id) {
-        this.activeTrainerId = id;
-        this.activeList = [...this.currentTrainer.questions];
-        this.currentIndex = 0;
-        this.answered = false;
-        this.answerStatus = null;
-        this.selectedOption = null;
-        this.mistakesList = [];
-        this.correctAnswersCount = 0;
-        this.currentView = 'trainer';
-      },
-
-      startMistakesReview() {
-        this.activeList = [...this.mistakesList];
-        this.currentIndex = 0;
-        this.answered = false;
-        this.answerStatus = null;
-        this.selectedOption = null;
-        this.mistakesList = [];
-        this.correctAnswersCount = 0;
-        this.currentView = 'trainer';
-      },
-
-      playSound(type) {
-        if (!this.soundEnabled) return;
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-
-          if (type === 'success') {
-            osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.12);
-            gain.gain.setValueAtTime(0.12, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.2);
-          } else if (type === 'error') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(160, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.2);
-            gain.gain.setValueAtTime(0.18, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.25);
-          } else if (type === 'victory') {
-            [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
-              const noteOsc = ctx.createOscillator();
-              const noteGain = ctx.createGain();
-              noteOsc.connect(noteGain);
-              noteGain.connect(ctx.destination);
-              noteOsc.frequency.value = freq;
-              noteGain.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.08);
-              noteGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.25);
-              noteOsc.start(ctx.currentTime + i * 0.08);
-              noteOsc.stop(ctx.currentTime + i * 0.08 + 0.25);
-            });
-          }
-        } catch (e) {
-          console.warn(e);
-        }
-      },
-
-      recordAnswer(isCorrect, originalQuestion) {
-        this.answered = true;
-        this.totalSolved++;
-        localStorage.setItem('learnix_solved', this.totalSolved);
-
-        if (isCorrect) {
-          this.answerStatus = 'correct';
-          this.correctAnswersCount++;
-          this.streak++;
-          this.playSound('success');
-        } else {
-          this.answerStatus = 'wrong';
-          this.streak = 0;
-          this.mistakesList.push(originalQuestion);
-          this.playSound('error');
-        }
-        localStorage.setItem('learnix_streak', this.streak);
-      },
-
-      handleAccentClick(letterObj, idx) {
-        if (!letterObj.isVowel || this.answered) return;
-        this.selectedOption = idx;
-        const isCorrect = idx === this.currentQuestion.correctIndex;
-        this.recordAnswer(isCorrect, this.activeList[this.currentIndex]);
-      },
-
-      getLetterClass(letterObj, idx) {
-        if (!letterObj.isVowel) return 'bg-slate-950/40 border-slate-800 text-slate-500';
-        if (!this.answered) return 'bg-slate-800/80 hover:bg-slate-700 border-slate-700 text-sky-400 hover:border-sky-400';
-        
-        if (idx === this.currentQuestion.correctIndex) {
-          return 'bg-emerald-500 border-emerald-400 text-slate-950 font-black scale-105 shadow-lg shadow-emerald-500/30';
-        }
-        if (idx === this.selectedOption && this.answerStatus === 'wrong') {
-          return 'bg-rose-500 border-rose-400 text-white animate-shake';
-        }
-        return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
-      },
-
-      handleOptionClick(opt) {
-        if (this.answered) return;
-        this.selectedOption = opt;
-        const isCorrect = opt === this.currentQuestion.correctLetter;
-        this.recordAnswer(isCorrect, this.activeList[this.currentIndex]);
-      },
-
-      getOptionBtnClass(opt) {
-        if (!this.answered) return 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-sky-300 hover:border-sky-400';
-        if (opt === this.currentQuestion.correctLetter) {
-          return 'bg-emerald-500 border-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/30';
-        }
-        if (opt === this.selectedOption && this.answerStatus === 'wrong') {
-          return 'bg-rose-500 border-rose-400 text-white animate-shake';
-        }
-        return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
-      },
-
-      handleParonymClick(word) {
-        if (this.answered) return;
-        this.selectedOption = word;
-        const isCorrect = word === this.currentQuestion.correctWord;
-        this.recordAnswer(isCorrect, this.activeList[this.currentIndex]);
-      },
-
-      getParonymBtnClass(word) {
-        if (!this.answered) return 'bg-slate-800/80 hover:bg-slate-700 border-slate-700 text-slate-200 hover:border-sky-400';
-        if (word === this.currentQuestion.correctWord) {
-          return 'bg-emerald-500 border-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/20';
-        }
-        if (word === this.selectedOption && this.answerStatus === 'wrong') {
-          return 'bg-rose-500 border-rose-400 text-white animate-shake';
-        }
-        return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
-      },
-
-      nextQuestion() {
-        if (this.currentIndex + 1 < this.activeList.length) {
-          this.currentIndex++;
-          this.answered = false;
-          this.selectedOption = null;
-          this.answerStatus = null;
-        } else {
-          this.currentView = 'summary';
-          this.playSound('victory');
-        }
+    function readStoredInt(key, fallback = 0) {
+      try {
+        const value = Number.parseInt(localStorage.getItem(key) ?? '', 10);
+        return Number.isFinite(value) && value >= 0 ? value : fallback;
+      } catch {
+        return fallback;
       }
     }
-  }).mount('#app');
-</script>
 
+    function readStoredBoolean(key, fallback) {
+      try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : value === 'true';
+      } catch {
+        return fallback;
+      }
+    }
+
+    function writeStoredValue(key, value) {
+      try {
+        localStorage.setItem(key, String(value));
+      } catch {
+        // Приложение продолжает работать, даже если хранилище недоступно.
+      }
+    }
+
+    function shuffle(items) {
+      const result = [...items];
+
+      for (let index = result.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
+      }
+
+      return result;
+    }
+
+    createApp({
+      data() {
+        return {
+          currentView: 'catalog',
+          activeCategory: 'all',
+          activeTrainerId: null,
+          currentIndex: 0,
+          answered: false,
+          answerStatus: null,
+          selectedOption: null,
+
+          streak: readStoredInt('learnix_streak'),
+          totalSolved: readStoredInt('learnix_solved'),
+          soundEnabled: readStoredBoolean('learnix_sound', true),
+
+          mistakesList: [],
+          correctAnswersCount: 0,
+          activeList: [],
+
+          categories: [
+            { id: 'all', title: 'Все темы' },
+            { id: 'ortho', title: 'Орфография' },
+            { id: 'norms', title: 'Произношение' },
+            { id: 'lexis', title: 'Лексика' }
+          ],
+
+          trainers: [
+            {
+              id: 'accents',
+              category: 'norms',
+              tag: 'Произношение',
+              title: 'Ударения в словах',
+              description: 'Тренируйтесь находить ударную гласную в распространённых словах.',
+              preview: 'каталОг',
+              type: 'accents',
+              questions: [
+                {
+                  rawWord: 'добрала',
+                  correctIndex: 6,
+                  rule: 'В форме прошедшего времени женского рода ударение часто падает на окончание: добралА, взялА, жилА.'
+                },
+                {
+                  rawWord: 'торты',
+                  correctIndex: 1,
+                  rule: 'Правильно: тОрты. Ударение сохраняется на основе: тОрты, тОртов, тОртами.'
+                },
+                {
+                  rawWord: 'звонит',
+                  correctIndex: 4,
+                  rule: 'Правильно: звонИт. В формах настоящего времени ударение сохраняется на окончании: звонИшь, звонИт, звонИм, звонИте, звонЯт.'
+                },
+                {
+                  rawWord: 'жалюзи',
+                  correctIndex: 5,
+                  rule: 'Правильно: жалюзИ. Ударение падает на последний слог.'
+                },
+                {
+                  rawWord: 'каталог',
+                  correctIndex: 5,
+                  rule: 'Правильно: каталОг. Сравните: диалОг, монолОг; анАлог — исключение.'
+                },
+                {
+                  rawWord: 'кралась',
+                  correctIndex: 2,
+                  rule: 'Правильно: крАлась. В этой форме ударение падает на корень.'
+                },
+                {
+                  rawWord: 'банты',
+                  correctIndex: 1,
+                  rule: 'Правильно: бАнты. Ударение сохраняется на первом слоге.'
+                },
+                {
+                  rawWord: 'донизу',
+                  correctIndex: 1,
+                  rule: 'Правильно: дОнизу. В этом наречии ударение падает на приставку.'
+                }
+              ]
+            },
+
+            {
+              id: 'roots',
+              category: 'ortho',
+              tag: 'Орфография',
+              title: 'Гласные в корнях',
+              description: 'Чередующиеся, проверяемые и словарные гласные в корнях слов.',
+              preview: 'прик_сновение',
+              type: 'letter_gap',
+              questions: [
+                {
+                  instruction: 'Чередование в корне КОС / КАС',
+                  prefix: 'прик',
+                  suffix: 'сновение',
+                  correctLetter: 'о',
+                  options: ['о', 'а'],
+                  rule: 'В корне КОС—КАС перед суффиксом -А- пишется А: касаться. Если суффикса -А- нет, пишется О: прикосновение.'
+                },
+                {
+                  instruction: 'Словарное слово',
+                  prefix: 'в',
+                  suffix: 'негрет',
+                  correctLetter: 'и',
+                  options: ['и', 'е'],
+                  rule: 'Правильно: винегрет. Написание этого слова нужно запомнить.'
+                },
+                {
+                  instruction: 'Чередование в корне ГОР / ГАР',
+                  prefix: 'заг',
+                  suffix: 'релый',
+                  correctLetter: 'о',
+                  options: ['о', 'а'],
+                  rule: 'В корне гар-/гор- без ударения пишется О: загорелый, подгореть. Под ударением обычно пишется А: загар.'
+                },
+                {
+                  instruction: 'Чередование в корне СКАК / СКОЧ',
+                  prefix: 'выск',
+                  suffix: 'чить',
+                  correctLetter: 'о',
+                  options: ['о', 'а'],
+                  rule: 'В корне перед Ч обычно пишется О: выскочить. Перед К обычно пишется А: скакать. Есть слова-исключения.'
+                },
+                {
+                  instruction: 'Чередование в корне МАК / МОК',
+                  prefix: 'пром',
+                  suffix: 'кашка',
+                  correctLetter: 'о',
+                  options: ['о', 'а'],
+                  rule: 'Корень МОК- связан со значением «пропускать жидкость, становиться влажным»: промокашка. Корень МАК- означает «погружать в жидкость»: макать.'
+                },
+                {
+                  instruction: 'Словарное слово',
+                  prefix: 'пал',
+                  suffix: 'садник',
+                  correctLetter: 'и',
+                  options: ['и', 'е'],
+                  rule: 'Правильно: палисадник. Написание слова нужно запомнить.'
+                }
+              ]
+            },
+
+            {
+              id: 'prefixes',
+              category: 'ortho',
+              tag: 'Орфография',
+              title: 'Приставки ПРЕ- и ПРИ-',
+              description: 'Различайте приставки по значению и запоминайте слова с трудным написанием.',
+              preview: 'пр_морский',
+              type: 'letter_gap',
+              questions: [
+                {
+                  instruction: 'Значение близости',
+                  prefix: 'пр',
+                  suffix: 'морский',
+                  correctLetter: 'и',
+                  options: ['и', 'е'],
+                  rule: 'ПРИ- пишется в значении близости: приморский — находящийся около моря.'
+                },
+                {
+                  instruction: 'Значение высокой степени качества',
+                  prefix: 'пр',
+                  suffix: 'милый',
+                  correctLetter: 'е',
+                  options: ['е', 'и'],
+                  rule: 'ПРЕ- может иметь значение высокой степени качества, близкое по смыслу к слову «очень»: премилый — очень милый.'
+                },
+                {
+                  instruction: 'Значение неполноты действия',
+                  prefix: 'пр',
+                  suffix: 'открыть',
+                  correctLetter: 'и',
+                  options: ['и', 'е'],
+                  rule: 'ПРИ- обозначает неполноту действия: приоткрыть — открыть не полностью.'
+                },
+                {
+                  instruction: 'Значение, близкое к приставке ПЕРЕ-',
+                  prefix: 'пр',
+                  suffix: 'одолеть',
+                  correctLetter: 'е',
+                  options: ['е', 'и'],
+                  rule: 'В слове преодолеть пишется ПРЕ-. В этом слове значение приставки близко к значению ПЕРЕ-: преодолеть препятствие.'
+                },
+                {
+                  instruction: 'Словарное слово',
+                  prefix: 'пр',
+                  suffix: 'зидент',
+                  correctLetter: 'е',
+                  options: ['е', 'и'],
+                  rule: 'Правильно: президент. Написание заимствованного слова нужно запомнить.'
+                },
+                {
+                  instruction: 'Значение приближения к результату',
+                  prefix: 'пр',
+                  suffix: 'готовить',
+                  correctLetter: 'и',
+                  options: ['и', 'е'],
+                  rule: 'Правильно: приготовить. В этом слове пишется приставка ПРИ-.'
+                }
+              ]
+            },
+
+            {
+              id: 'suffixes',
+              category: 'ortho',
+              tag: 'Орфография',
+              title: 'Правописание суффиксов',
+              description: 'Суффиксы глаголов и прилагательных, а также написание слов-исключений.',
+              preview: 'исследов_ть',
+              type: 'letter_gap',
+              questions: [
+                {
+                  instruction: 'Суффикс глагола в неопределённой форме',
+                  prefix: 'исследов',
+                  suffix: 'ть',
+                  correctLetter: 'а',
+                  options: ['а', 'ыва'],
+                  rule: 'Сравните форму 1-го лица: я исследую. Если в этой форме глагол оканчивается на -ую или -юю, в неопределённой форме обычно пишется -ова- или -ева-: исследовать.'
+                },
+                {
+                  instruction: 'Суффикс сохраняется в форме 1-го лица',
+                  prefix: 'застёг',
+                  suffix: 'ть',
+                  correctLetter: 'ива',
+                  options: ['ива', 'ева'],
+                  rule: 'Сравните форму 1-го лица: я застёгиваю. Суффикс -ива- сохраняется, поэтому правильно: застёгивать.'
+                },
+                {
+                  instruction: 'Написание слова перед суффиксом -ВА-',
+                  prefix: 'затм',
+                  suffix: 'вать',
+                  correctLetter: 'е',
+                  options: ['е', 'и'],
+                  rule: 'Правильно: затмевать. Перед суффиксом -ВА- сохраняется гласная, которая пишется в форме без этого суффикса: затмить — затмевать.'
+                },
+                {
+                  instruction: 'Безударный суффикс прилагательного',
+                  prefix: 'фасол',
+                  suffix: 'вый',
+                  correctLetter: 'е',
+                  options: ['е', 'и'],
+                  rule: 'Правильно: фасолевый. В безударном суффиксе прилагательного пишется Е: фасолевый, сиреневый.'
+                },
+                {
+                  instruction: 'Суффикс глагола',
+                  prefix: 'ноч',
+                  suffix: 'вать',
+                  correctLetter: 'е',
+                  options: ['е', 'ива'],
+                  rule: 'Правильно: ночевать. Сравните форму 1-го лица: я ночую.'
+                }
+              ]
+            },
+
+            {
+              id: 'n-nn',
+              category: 'ortho',
+              tag: 'Орфография',
+              title: 'Одна и две буквы Н',
+              description: 'Тренируйтесь различать прилагательные и причастия с Н и НН.',
+              preview: 'масл_ый',
+              type: 'letter_gap',
+              questions: [
+                {
+                  instruction: 'Прилагательное с суффиксом -ЯН-',
+                  prefix: 'масл',
+                  suffix: 'ый крем',
+                  correctLetter: 'ян',
+                  options: ['ян', 'янн'],
+                  rule: 'В прилагательных с суффиксами -АН-, -ЯН-, -ИН- обычно пишется одна Н: масляный, кожаный, соколиный. Исключения: стеклянный, оловянный, деревянный.'
+                },
+                {
+                  instruction: 'Причастие с зависимым словом',
+                  prefix: 'тушё',
+                  suffix: 'ое в печи мясо',
+                  correctLetter: 'нн',
+                  options: ['нн', 'н'],
+                  rule: 'В полном причастии при наличии зависимого слова пишется НН: тушённое в печи мясо.'
+                },
+                {
+                  instruction: 'Слово-исключение',
+                  prefix: 'дерев',
+                  suffix: 'ый дом',
+                  correctLetter: 'янн',
+                  options: ['янн', 'ян'],
+                  rule: 'Слова стеклянный, оловянный и деревянный пишутся с НН.'
+                },
+                {
+                  instruction: 'Одиночное отглагольное прилагательное',
+                  prefix: 'ране',
+                  suffix: 'ый боец',
+                  correctLetter: 'н',
+                  options: ['н', 'нн'],
+                  rule: 'В слове раненый без зависимых слов и приставки пишется одна Н. Сравните: раненный в руку боец.'
+                },
+                {
+                  instruction: 'Слово, образованное от глагола совершенного вида',
+                  prefix: 'купл',
+                  suffix: 'ый товар',
+                  correctLetter: 'енн',
+                  options: ['енн', 'ен'],
+                  rule: 'Правильно: купленный товар. В слове пишутся две Н.'
+                }
+              ]
+            },
+
+            {
+              id: 'yo-after-sibilants',
+              category: 'ortho',
+              tag: 'Орфография',
+              title: 'Ё и О после шипящих',
+              description: 'Проверьте написание гласных после шипящих в корнях слов.',
+              preview: 'ч_рствый',
+              type: 'letter_gap',
+              questions: [
+                {
+                  instruction: 'Проверяемая гласная в корне',
+                  prefix: 'ч',
+                  suffix: 'рствый',
+                  correctLetter: 'ё',
+                  options: ['ё', 'о'],
+                  rule: 'В слове чёрствый пишется Ё. Проверочное однокоренное слово — черстветь.'
+                },
+                {
+                  instruction: 'Проверяемая гласная в корне',
+                  prefix: 'ш',
+                  suffix: 'пот',
+                  correctLetter: 'ё',
+                  options: ['ё', 'о'],
+                  rule: 'Правильно: шёпот. Написание Ё можно проверить однокоренным словом шептать.'
+                },
+                {
+                  instruction: 'Словарное слово',
+                  prefix: 'ш',
+                  suffix: 'фёр',
+                  correctLetter: 'о',
+                  options: ['ё', 'о'],
+                  rule: 'Правильно: шофёр. Это слово нужно запомнить.'
+                }
+              ]
+            },
+
+            {
+              id: 'paronyms',
+              category: 'lexis',
+              tag: 'Лексика',
+              title: 'Точные значения слов',
+              description: 'Выбирайте слово с подходящим значением и правильной сочетаемостью.',
+              preview: 'годовалый / годовой',
+              type: 'paronyms',
+              questions: [
+                {
+                  sentenceBefore: 'В парке гуляла женщина с',
+                  sentenceAfter: 'ребёнком.',
+                  options: ['годовалым', 'годовым'],
+                  correctWord: 'годовалым',
+                  rule: 'Годовалый — в возрасте одного года: годовалый ребёнок. Годовой — относящийся к году или рассчитанный на год: годовой отчёт.'
+                },
+                {
+                  sentenceBefore: 'Перед выходом на улицу в мороз необходимо',
+                  sentenceAfter: 'тёплое пальто.',
+                  options: ['надеть', 'одеть'],
+                  correctWord: 'надеть',
+                  rule: 'Надеть можно одежду: надеть пальто. Одеть — кого-либо: одеть ребёнка.'
+                },
+                {
+                  sentenceBefore: 'Пожилой мастер проявил себя как',
+                  sentenceAfter: 'реставратор.',
+                  options: ['искусный', 'искусственный'],
+                  correctWord: 'искусный',
+                  rule: 'Искусный — умелый, обладающий мастерством. Искусственный — созданный человеком, ненатуральный.'
+                },
+                {
+                  sentenceBefore: 'В вопросах точных наук он оказался',
+                  sentenceAfter: ', путающим базовые понятия.',
+                  options: ['невеждой', 'невежей'],
+                  correctWord: 'невеждой',
+                  rule: 'Невежда — малообразованный, несведущий человек. Невежа — грубый, невоспитанный человек.'
+                },
+                {
+                  sentenceBefore: 'Разведчики проникли во',
+                  sentenceAfter: 'лагерь.',
+                  options: ['вражеский', 'враждебный'],
+                  correctWord: 'вражеский',
+                  rule: 'Вражеский — принадлежащий противнику: вражеский лагерь. Враждебный — полный неприязни: враждебный взгляд.'
+                },
+                {
+                  sentenceBefore: 'Своевременная',
+                  sentenceAfter: 'проезда обязательна.',
+                  options: ['оплата', 'выплата'],
+                  correctWord: 'оплата',
+                  rule: 'Оплата — внесение денег за товар или услугу: оплата проезда. Выплата — выдача денег: выплата пособия.'
+                }
+              ]
+            }
+          ]
+        };
+      },
+
+      computed: {
+        filteredTrainers() {
+          if (this.activeCategory === 'all') {
+            return this.trainers;
+          }
+
+          return this.trainers.filter(trainer => trainer.category === this.activeCategory);
+        },
+
+        currentTrainer() {
+          return this.trainers.find(trainer => trainer.id === this.activeTrainerId) || this.trainers[0];
+        },
+
+        currentQuestion() {
+          const question = this.activeList[this.currentIndex];
+
+          if (!question) {
+            return null;
+          }
+
+          if (this.currentTrainer.type === 'accents') {
+            const vowels = new Set(['а', 'о', 'у', 'ы', 'э', 'е', 'ё', 'и', 'ю', 'я']);
+
+            return {
+              ...question,
+              letters: [...question.rawWord].map((char, index) => ({
+                char,
+                index,
+                isVowel: vowels.has(char.toLowerCase())
+              }))
+            };
+          }
+
+          return question;
+        },
+
+        roundAccuracy() {
+          if (this.activeList.length === 0) {
+            return 0;
+          }
+
+          return Math.round((this.correctAnswersCount / this.activeList.length) * 100);
+        }
+      },
+
+      methods: {
+        goHome() {
+          this.currentView = 'catalog';
+          this.activeTrainerId = null;
+        },
+
+        startTrainer(id) {
+          const trainer = this.trainers.find(item => item.id === id);
+
+          if (!trainer) {
+            return;
+          }
+
+          this.activeTrainerId = id;
+          this.activeList = shuffle(trainer.questions);
+          this.currentIndex = 0;
+          this.answered = false;
+          this.answerStatus = null;
+          this.selectedOption = null;
+          this.mistakesList = [];
+          this.correctAnswersCount = 0;
+          this.currentView = 'trainer';
+        },
+
+        startMistakesReview() {
+          if (this.mistakesList.length === 0) {
+            return;
+          }
+
+          this.activeList = [...this.mistakesList];
+          this.currentIndex = 0;
+          this.answered = false;
+          this.answerStatus = null;
+          this.selectedOption = null;
+          this.mistakesList = [];
+          this.correctAnswersCount = 0;
+          this.currentView = 'trainer';
+        },
+
+        toggleSound() {
+          this.soundEnabled = !this.soundEnabled;
+          writeStoredValue('learnix_sound', this.soundEnabled);
+        },
+
+        playSound(type) {
+          if (!this.soundEnabled) {
+            return;
+          }
+
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+          if (!AudioContextClass) {
+            return;
+          }
+
+          try {
+            const context = new AudioContextClass();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+
+            if (type === 'success') {
+              oscillator.frequency.setValueAtTime(523.25, context.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(783.99, context.currentTime + 0.12);
+              gain.gain.setValueAtTime(0.12, context.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2);
+              oscillator.start();
+              oscillator.stop(context.currentTime + 0.2);
+            } else if (type === 'error') {
+              oscillator.type = 'sawtooth';
+              oscillator.frequency.setValueAtTime(160, context.currentTime);
+              oscillator.frequency.linearRampToValueAtTime(100, context.currentTime + 0.2);
+              gain.gain.setValueAtTime(0.12, context.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.25);
+              oscillator.start();
+              oscillator.stop(context.currentTime + 0.25);
+            }
+
+            oscillator.onended = () => {
+              context.close().catch(() => {});
+            };
+          } catch {
+            // Звук необязателен: ошибка воспроизведения не влияет на тренировку.
+          }
+        },
+
+        recordAnswer(isCorrect, question) {
+          if (this.answered) {
+            return;
+          }
+
+          this.answered = true;
+          this.totalSolved += 1;
+          writeStoredValue('learnix_solved', this.totalSolved);
+
+          if (isCorrect) {
+            this.answerStatus = 'correct';
+            this.correctAnswersCount += 1;
+            this.streak += 1;
+            this.playSound('success');
+          } else {
+            this.answerStatus = 'wrong';
+            this.streak = 0;
+            this.mistakesList.push(question);
+            this.playSound('error');
+          }
+
+          writeStoredValue('learnix_streak', this.streak);
+        },
+
+        handleAccentClick(letter, index) {
+          if (!letter.isVowel || this.answered || !this.currentQuestion) {
+            return;
+          }
+
+          this.selectedOption = index;
+          this.recordAnswer(
+            index === this.currentQuestion.correctIndex,
+            this.activeList[this.currentIndex]
+          );
+        },
+
+        getLetterClass(letter, index) {
+          if (!letter.isVowel) {
+            return 'bg-slate-950/40 border-slate-800 text-slate-500';
+          }
+
+          if (!this.answered) {
+            return 'bg-slate-800/80 hover:bg-slate-700 border-slate-700 text-sky-400 hover:border-sky-400';
+          }
+
+          if (index === this.currentQuestion.correctIndex) {
+            return 'bg-emerald-500 border-emerald-400 text-slate-950 font-black scale-105 shadow-lg shadow-emerald-500/30';
+          }
+
+          if (index === this.selectedOption && this.answerStatus === 'wrong') {
+            return 'bg-rose-500 border-rose-400 text-white animate-shake';
+          }
+
+          return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
+        },
+
+        handleOptionClick(option) {
+          if (this.answered || !this.currentQuestion) {
+            return;
+          }
+
+          this.selectedOption = option;
+          this.recordAnswer(
+            option === this.currentQuestion.correctLetter,
+            this.activeList[this.currentIndex]
+          );
+        },
+
+        getOptionBtnClass(option) {
+          if (!this.answered) {
+            return 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-sky-300 hover:border-sky-400';
+          }
+
+          if (option === this.currentQuestion.correctLetter) {
+            return 'bg-emerald-500 border-emerald-400 text-slate-950 font-black shadow-lg shadow-emerald-500/30';
+          }
+
+          if (option === this.selectedOption && this.answerStatus === 'wrong') {
+            return 'bg-rose-500 border-rose-400 text-white animate-shake';
+          }
+
+          return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
+        },
+
+        handleParonymClick(word) {
+          if (this.answered || !this.currentQuestion) {
+            return;
+          }
+
+          this.selectedOption = word;
+          this.recordAnswer(
+            word === this.currentQuestion.correctWord,
+            this.activeList[this.currentIndex]
+          );
+        },
+
+        getParonymBtnClass(word) {
+          if (!this.answered) {
+            return 'bg-slate-800/80 hover:bg-slate-700 border-slate-700 text-slate-200 hover:border-sky-400';
+          }
+
+          if (word === this.currentQuestion.correctWord) {
+            return 'bg-emerald-500 border-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/20';
+          }
+
+          if (word === this.selectedOption && this.answerStatus === 'wrong') {
+            return 'bg-rose-500 border-rose-400 text-white animate-shake';
+          }
+
+          return 'bg-slate-900 border-slate-800 text-slate-600 opacity-40';
+        },
+
+        nextQuestion() {
+          if (this.currentIndex + 1 < this.activeList.length) {
+            this.currentIndex += 1;
+            this.answered = false;
+            this.selectedOption = null;
+            this.answerStatus = null;
+            return;
+          }
+
+          this.currentView = 'summary';
+        }
+      }
+    }).mount('#app');
+  </script>
 </body>
 </html>
